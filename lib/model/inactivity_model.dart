@@ -13,10 +13,15 @@ class InactivityDetailsModel {
 
   factory InactivityDetailsModel.fromJson(Map<String, dynamic> json) {
     return InactivityDetailsModel(
-      lastLockedTime: formatDateTime(DateTime.parse(json['lastlockedtime'])),
-      lastInactivityHours: formatSeconds(json['lastInactivityhours']),
-      lastUnlockedTime:
-          formatDateTime(DateTime.parse(json['lastunlockedtime'])),
+      lastLockedTime: json['lastlockedtime'].toString().isNotEmpty
+          ? formatDateTime(DateTime.parse(json['lastlockedtime']))
+          : "",
+      lastInactivityHours: json['lastInactivityhours'].toString().isNotEmpty
+          ? formatSeconds(json['lastInactivityhours'])
+          : "",
+      lastUnlockedTime: json['lastunlockedtime'].toString().isNotEmpty
+          ? formatDateTime(DateTime.parse(json['lastunlockedtime']))
+          : "",
     );
   }
 

@@ -1,13 +1,14 @@
 
 import 'package:care_connect/model/beneficiary_model.dart';
 import 'package:care_connect/model/medication_model.dart';
+import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 
 class BeneficiaryLocalService {
   final box = GetStorage();
   // Store the JSON representation in GetStorage
   void saveToGetStorage(Map<String, dynamic> data) {
-    print("saveBen");
+    debugPrint("saveBen");
     // Assuming you want to store it with medications
     box.write('beneficiary', data);
     retrieveFromGetStorage();
@@ -16,7 +17,7 @@ class BeneficiaryLocalService {
   // Retrieve from GetStorage
   BenefiiciaryModel retrieveFromGetStorage() {
     final a = box.read('beneficiary') ?? {};
-    print("get_ben$a");
+    debugPrint("get_ben$a");
     // If medications is a list, cast it to List<Map<String, dynamic>>
     List medidetails = a["medications"];
     List<MedicationPillModel> medications =

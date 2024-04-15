@@ -1,4 +1,5 @@
 import 'package:care_connect/model/care_taker_model.dart';
+import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 
 class CareTakerLocalService {
@@ -19,6 +20,7 @@ class CareTakerLocalService {
 
   // Update in GetStorage
   void updateInGetStorage(Map<String, dynamic> data) {
+    debugPrint(data.toString());
     // Assuming you want to update with medications
     box.write('caretaker', data);
   }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -89,9 +90,11 @@ class NotificationServices {
   }
 
   static const String _serverKey =
-      'AAAAcTLeMSE:APA91bFnAaCmGHNYnWdEoE5KN8M3Xl8C8Ej36xxCMtXpCYDIQthpiOi1FONhBJWwVzWXnJDzEIWT8oAV9SuuPJEAAwgWT8SLmcAdXOnMrzO-xoiIPUiLHAaKYmYzeLimBkMMIKCAJWTW';
+      'AAAAcTLeMSE:APA91bE9fDuwWXrkw7ZJb03PPn8h0W_VEf-5wiaUdPDLGIO-qKzu851ruX0-VNRk53tHamZVxZVgZfFib-jjFcq76Fq7aEdo-jhf-VjlKPa2VplS0KxQHPPoK61_yKSH4tBUL-hiXcj-';
 
-  Future<bool> sendNotification( String title, String body,String to,Map<String ,dynamic>data) async {
+  Future<bool> sendNotification(
+      String title, String body, String to, Map<String, dynamic> data) async {
+    debugPrint(to);
     try {
       final url = Uri.parse('https://fcm.googleapis.com/fcm/send');
       final response = await http.post(
@@ -102,8 +105,7 @@ class NotificationServices {
         },
         body: jsonEncode({
           'notification': {'title': title, 'body': body},
-          'to':
-              to,
+          'to': to.trim(),
           'data': data, // Include payload here
         }),
       );
@@ -111,23 +113,23 @@ class NotificationServices {
       if (response.statusCode == 200) {
         return true;
       } else {
-        print('Failed to send notification: ${response.statusCode}');
+        debugPrint('Failed to send notification: ${response.body}');
         return false;
       }
     } catch (e) {
-      print('Error sending notification: $e');
+      debugPrint('Error sending notification: $e');
       return false;
     }
   }
 }
 
 Future<void> handleBackgroundMessage(RemoteMessage message) async {
-  print(message.notification!.title);
-  print(message.notification!.body);
+  debugPrint(message.notification!.title);
+  debugPrint(message.notification!.body);
 }
 
 Future handleMessages(RemoteMessage? remoteMessage) async {
-  print(remoteMessage);
+  debugPrint(remoteMessage.toString());
   if (remoteMessage == null) return;
   Get.toNamed(AlertScreen.route,
       arguments: remoteMessage.notification!.title.toString());

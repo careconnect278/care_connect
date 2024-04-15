@@ -1,5 +1,6 @@
 import 'package:care_connect/model/care_taker_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/widgets.dart';
 
 class CareTakerDatabaseService {
   final CollectionReference careTakerCollection =
@@ -11,7 +12,7 @@ class CareTakerDatabaseService {
           .doc(careTakerModel.careUid)
           .set(careTakerModel.toJson());
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
     }
   }
 
@@ -19,7 +20,7 @@ class CareTakerDatabaseService {
     try {
       await careTakerCollection.doc(uid).update(data);
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:care_connect/model/medication_model.dart';
+import 'package:flutter/material.dart';
 
 class BenefiiciaryModel {
   String name;
@@ -30,7 +31,7 @@ class BenefiiciaryModel {
       Map<String, dynamic> json, List<MedicationPillModel> medications) {
     List<dynamic> alergies = json["alergies"];
     List<dynamic> emergency = json["emergency"];
-
+    debugPrint(json.toString());
     return BenefiiciaryModel(
         medications: medications,
         name: json['name'].toString(),

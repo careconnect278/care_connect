@@ -3,6 +3,7 @@ import 'package:care_connect/controller/services/beneficiary/beneficiary_local_d
 import 'package:care_connect/controller/services/caretaker/care_taker_db.dart';
 import 'package:care_connect/controller/services/caretaker/care_taker_local_db.dart';
 import 'package:care_connect/controller/services/caretaker/notification_service.dart';
+import 'package:care_connect/controller/services/noise_service.dart';
 import 'package:care_connect/controller/services/screen_timer_services.dart';
 import 'package:care_connect/model/beneficiary_model.dart';
 import 'package:care_connect/model/care_taker_model.dart';
@@ -47,6 +48,7 @@ class AuthentincationServices {
           }
           memberManagementOnCareTaker.caretaker.value = careTakerModel;
           careTakerLocalService.saveToGetStorage(careTakerModel.toJson());
+          memberManagementOnCareTaker.getAndNavigate();
         } else {
           BenefiiciaryModel benefiiciaryModel =
               await beneficiaryDatabaseService.getBenDetails(user.uid);
@@ -62,7 +64,10 @@ class AuthentincationServices {
             "lastlockedtime": "",
             "lastInactivityhours": ""
           });
+          memberManagementOnCareTaker.getAndNavigate();
           ScreenTimerServices().startListening();
+          NoiseService noiseService = NoiseService();
+          noiseService.start(benefiiciaryModel);
         }
 
         return true;
@@ -104,6 +109,11 @@ class AuthentincationServices {
           beneficiaryDatabaseService.beneficiaryDetailsAdd(benefiiciaryModel);
           beneficiaryDatabaseService.medicalAdd(
               benefiiciaryModel.memberUid, benefiiciaryModel);
+          beneficiaryDatabaseService.addInactivityDetails(user.uid, {
+            "lastunlockedtime": "",
+            "lastlockedtime": "",
+            "lastInactivityhours": ""
+          });
         }
 
         return LoginReturnModel(uid: user.uid, responseValue: true);
@@ -112,6 +122,7 @@ class AuthentincationServices {
       }
     } on FirebaseAuthException catch (e) {
       Get.showSnackbar(GetSnackBar(
+        duration: const Duration(seconds: 3),
         title: e.code,
         message: e.message,
       ));

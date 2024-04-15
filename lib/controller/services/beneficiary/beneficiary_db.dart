@@ -2,6 +2,7 @@ import 'package:care_connect/controller/implementation/member_mangement_caretake
 import 'package:care_connect/model/beneficiary_model.dart';
 import 'package:care_connect/model/medication_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class BeneficiaryDatabaseService {
@@ -14,7 +15,7 @@ class BeneficiaryDatabaseService {
           .doc(benefiiciaryModel.memberUid)
           .set(benefiiciaryModel.toJson(false));
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
     }
   }
 
@@ -22,7 +23,7 @@ class BeneficiaryDatabaseService {
     try {
       await beneficiaryCollection.doc(uid).update(data);
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
     }
   }
 
@@ -30,13 +31,26 @@ class BeneficiaryDatabaseService {
     final MemberManagementOnCareTaker managementOnCareTaker = Get.find();
     final CollectionReference medicationCollection =
         beneficiaryCollection.doc(uid).collection("medication");
-
     for (var element in beneficiary.medications) {
       final a = medicationCollection.doc();
       element.id = a.id;
       a.set(element.toJson());
     }
     managementOnCareTaker.members.add(beneficiary);
+  }
+
+  medicalUpdate(String uid, BenefiiciaryModel beneficiary) {
+    final CollectionReference medicationCollection =
+        beneficiaryCollection.doc(uid).collection("medication");
+    for (var element in beneficiary.medications) {
+      if (element.id.isEmpty) {
+        final a = medicationCollection.doc();
+        element.id = a.id;
+        a.set(element.toJson());
+      } else {
+        medicationCollection.doc(element.id).set(element.toJson());
+      }
+    }
   }
 
   Future<BenefiiciaryModel> getBenDetails(String uid) async {
@@ -65,10 +79,10 @@ class BeneficiaryDatabaseService {
     });
   }
 
-  addInactivityDetails(String uid, Map<String, dynamic> data) {
+  Future addInactivityDetails(String uid, Map<String, dynamic> data) async {
     final CollectionReference inactivityDetails =
         beneficiaryCollection.doc(uid).collection("inactivityDetails");
-    inactivityDetails.doc(uid).set(data);
+    await inactivityDetails.doc(uid).set(data);
   }
 
   inactivityDetailsUpdate(String uid, Map<String, dynamic> data) async {
@@ -77,7 +91,7 @@ class BeneficiaryDatabaseService {
           beneficiaryCollection.doc(uid).collection("inactivityDetails");
       await inactivityDetails.doc(uid).update(data);
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
     }
   }
 }

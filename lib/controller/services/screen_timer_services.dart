@@ -2,10 +2,9 @@ import 'dart:async';
 import 'package:care_connect/controller/services/beneficiary/beneficiary_db.dart';
 import 'package:care_connect/controller/services/beneficiary/beneficiary_local_db.dart';
 import 'package:care_connect/controller/services/caretaker/notification_service.dart';
-import 'package:care_connect/firebase_options.dart';
+import 'package:care_connect/controller/services/noise_service.dart';
 import 'package:care_connect/model/beneficiary_model.dart';
-import 'package:care_connect/screen.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:screen_state/screen_state.dart';
 
@@ -19,69 +18,96 @@ class ScreenTimerServices {
   final Screen _screen = Screen();
   StreamSubscription<ScreenStateEvent>? subscription;
   bool started = false;
-  List<ScreenStateEventEntry> log = [];
   void startTimer(BenefiiciaryModel benefiiciaryModel) {
     seconds = 0;
     formattedTime = "00:00:00";
     int conditionSeconds = timeStringToSeconds(benefiiciaryModel.timeToAlert);
-    timer = Timer.periodic(const Duration(seconds: 1), (tier) {
+    debugPrint(conditionSeconds.toString());
+    timer = Timer.periodic(const Duration(seconds: 1), (tier) async {
       seconds++;
       formattedTime = DateFormat('HH:mm:ss')
           .format(DateTime(0).add(Duration(seconds: seconds)));
-      if (conditionSeconds == tier.tick) {
-        print("leodas${conditionSeconds == tier.tick}");
+      if ((tier.tick == conditionSeconds)) {
+        // debugPrint("leodas${1 == tier.tick}");
         NotificationServices().sendNotification(
             "somethingWentwrong",
             "please check",
-            benefiiciaryModel.careToken,
+            benefiiciaryModel.benToken,
             {"user": benefiiciaryModel.name});
       }
     });
   }
 
-  /// Start listening to screen events this working on background and foreground using flutter_background_service,
+  // static const platform = MethodChannel('com.example.care_connect/screenState');
+
+  // void startListening() async {
+  //   try {
+  //     await platform.invokeMethod('startListening');
+  //     debugPrint('Screen listening started');
+  //   } on PlatformException catch (e) {
+  //     debugPrint('Failed to start listening: ${e.message}');
+  //   }
+  // }
+
+  // void stopListening() async {
+  //   try {
+  //     await platform.invokeMethod('stopListening');
+  //     debugPrint('Screen listening stopped');
+  //   } on PlatformException catch (e) {
+  //     debugPrint('Failed to stop listening: ${e.message}');
+  //   }
+  // }
+
+  // Start listening to screen events this working on background and foreground using flutter_background_service,
   void startListening() async {
-    print('object');
+    debugPrint('objecaaaat');
     try {
       if (beneficiaryLocalService.box.hasData("beneficiary")) {
-        print("nujmbjnj");
+        debugPrint("nujmbjnj");
         BenefiiciaryModel benefiiciaryModel =
             beneficiaryLocalService.retrieveFromGetStorage();
-        _screen.screenStateStream!.listen(
-          (event) {
-            onData(event, benefiiciaryModel);
-          },
-        );
+        NoiseService noiseService = NoiseService();
+        noiseService.start(benefiiciaryModel);
+        _screen.screenStateStream!.listen((event) {
+          onData(event, benefiiciaryModel);
+        });
         started = true;
       } else {
-        print(beneficiaryLocalService.box.hasData("beneficiary"));
+        debugPrint(
+            beneficiaryLocalService.box.hasData("beneficiary").toString());
       }
     } on ScreenStateException catch (exception) {
-      print(exception);
+      debugPrint(exception.toString());
     }
   }
 
   void onData(ScreenStateEvent event, BenefiiciaryModel benefiiciaryModel) {
+    debugPrint("ondata");
     if (event == ScreenStateEvent.SCREEN_OFF) {
-      print('object');
+      debugPrint('object');
       formattedTime = DateFormat('HH:mm:ss').format(DateTime.now());
       beneficiaryDatabaseService.inactivityDetailsUpdate(
           benefiiciaryModel.memberUid,
           {"lastlockedtime": DateTime.now().toString()});
       startTimer(benefiiciaryModel);
-      log.add(ScreenStateEventEntry(event));
     } else if (event == ScreenStateEvent.SCREEN_UNLOCKED) {
-      print(timer!.tick);
-      print('unloacked');
+      try {
+        timer == null
+            ? () {
+                debugPrint("nu");
+              }
+            : timer!.cancel();
+      } catch (e) {
+        debugPrint(e.toString());
+      }
+      debugPrint(timer!.tick.toString());
+      debugPrint('unloacked');
       formattedTime = DateFormat('HH:mm:ss').format(DateTime.now());
       beneficiaryDatabaseService
           .inactivityDetailsUpdate(benefiiciaryModel.memberUid, {
         "lastunlockedtime": DateTime.now().toString(),
         "lastInactivityhours": timer == null ? 0 : timer!.tick
       });
-    
-
-      timer?.cancel();
     }
   }
 }
