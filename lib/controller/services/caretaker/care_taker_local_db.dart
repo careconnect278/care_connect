@@ -6,7 +6,6 @@ class CareTakerLocalService {
   final box = GetStorage();
   // Store the JSON representation in GetStorage
   void saveToGetStorage(Map<String, dynamic> data) {
-    // Assuming you want to store it with medications
     box.write('caretaker', data);
   }
 
@@ -21,7 +20,7 @@ class CareTakerLocalService {
   // Update in GetStorage
   void updateInGetStorage(Map<String, dynamic> data) {
     debugPrint(data.toString());
-    // Assuming you want to update with medications
+
     box.write('caretaker', data);
   }
 

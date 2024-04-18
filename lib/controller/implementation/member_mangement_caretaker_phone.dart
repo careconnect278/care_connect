@@ -2,7 +2,6 @@ import 'package:care_connect/controller/services/beneficiary/beneficiary_db.dart
 import 'package:care_connect/controller/services/beneficiary/beneficiary_local_db.dart';
 import 'package:care_connect/controller/services/caretaker/care_taker_db.dart';
 import 'package:care_connect/controller/services/caretaker/care_taker_local_db.dart';
-import 'package:care_connect/controller/services/noise_service.dart';
 import 'package:care_connect/controller/services/screen_timer_services.dart';
 import 'package:care_connect/model/care_taker_model.dart';
 import 'package:care_connect/model/inactivity_model.dart';
@@ -79,10 +78,8 @@ class MemberManagementOnCareTaker extends GetxController {
       });
       beneficiaryLocalService.saveToGetStorage(benefiiciaryModel.toJson(true));
       debugPrint("firebase${benefiiciaryModel.toJson(true)}");
-      ScreenTimerServices().startListening();
+      ScreenTimerServices().startListening("init");
 
-      NoiseService noiseService = NoiseService();
-      noiseService.start(benefiiciaryModel);
     } else {
       loginState.value = LoginState.login;
     }

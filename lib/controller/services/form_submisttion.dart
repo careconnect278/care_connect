@@ -13,76 +13,100 @@ import '../../model/login_return_model.dart';
 import '../../model/medication_model.dart';
 import '../../view/add_member_screen.dart';
 import 'authentication_service.dart';
-import 'caretaker/notification_service.dart';
-
+import 'notification_service.dart';
+/// A class representing operations related to form submissions.
 class FormSubmission {
+  // Initializing necessary services
   static NotificationServices notificationServices = NotificationServices();
-  static AuthentincationServices authentincationServices =
+  static AuthentincationServices authenticationServices =
       AuthentincationServices();
   static BeneficiaryDatabaseService beneficiaryDatabaseService =
       BeneficiaryDatabaseService();
-  static Future<void> register(TextFieldController textFieldController,
-      MemberManagementOnCareTaker managementOnCareTaker) async {
+
+  /// Registers a new member.
+  ///
+  /// This method registers a new member and associated caretaker in the system.
+  ///
+  /// Parameters:
+  /// - [textFieldController]: Controller containing form data.
+  /// - [managementOnCareTaker]: Object managing caretaker information.
+  static Future<void> register(
+    TextFieldController  textFieldController,
+    MemberManagementOnCareTaker  managementOnCareTaker,
+  ) async {
+    // Getting loader instance
     LoaderController loader = Get.find();
     loader.start();
+
+    // Obtaining notification token
     String token = await notificationServices.getToken();
-    BenefiiciaryModel benefiiciaryModel = BenefiiciaryModel(
-        benToken: "",
-        careToken: token,
-        name: textFieldController.beneficiaryNameController.text,
-        age: int.parse(textFieldController.beneficiaryageController.text),
-        email: textFieldController.beneficiaryEmailController.text,
-        careUid: "",
-        memberUid: "",
-        timeToAlert: textFieldController.alertTimeController.text,
-        medications: textFieldController.medicationControlllers
-            .where((allergy) => allergy.nameController.text.isNotEmpty)
-            .toList()
-            .map((e) => MedicationPillModel(
+
+    // Creating beneficiary model
+    BenefiiciaryModel beneficiaryModel = BenefiiciaryModel(
+      benToken: "",
+      careToken: token,
+      name: textFieldController.beneficiaryNameController.text,
+      age: int.parse(textFieldController.beneficiaryageController.text),
+      email: textFieldController.beneficiaryEmailController.text,
+      careUid: "",
+      memberUid: "",
+      timeToAlert: textFieldController.alertTimeController.text,
+      medications: textFieldController.medicationControlllers
+          .where((medication) => medication.nameController.text.isNotEmpty)
+          .toList()
+          .map((e) => MedicationPillModel(
                 name: e.nameController.text,
                 time: e.timeController.text,
-                id: ""))
-            .toList(),
-        alergies: textFieldController.allergiesControlllers
-            .where((allergy) => allergy.text.isNotEmpty)
-            .toList()
-            .map((e) => e.text)
-            .toList(),
-        emergencynumbers: textFieldController.emergencyNumberControlllers
-            .where((emergency) => emergency.text.isNotEmpty)
-            .toList()
-            .map((e) => e.text)
-            .toList());
-    LoginReturnModel loginReturnModel =
-        await authentincationServices.registeruser(
-            benefiiciaryModel.email,
-            textFieldController.beneficiaryPasswordController.text,
-            false,
-            null,
-            benefiiciaryModel);
+                id: "",
+              ))
+          .toList(),
+      alergies: textFieldController.allergiesControlllers
+          .where((allergy) => allergy.text.isNotEmpty)
+          .toList()
+          .map((e) => e.text)
+          .toList(),
+      emergencynumbers: textFieldController.emergencyNumberControlllers
+          .where((emergency) => emergency.text.isNotEmpty)
+          .toList()
+          .map((e) => e.text)
+          .toList(),
+    );
 
+    // Registering user
+    LoginReturnModel loginReturnModel = await authenticationServices.registeruser(
+      beneficiaryModel.email,
+      textFieldController.beneficiaryPasswordController.text,
+      false,
+      null,
+      beneficiaryModel,
+    );
+
+    // Creating caretaker model
     CareTakerModel careTakerModel = CareTakerModel(
-        name: textFieldController.caretakerNameController.text,
-        phoneNumber: textFieldController.caretakerPhoneNumberController.text,
-        email: textFieldController.caretakerEmailController.text,
-        careToken: token,
-        careUid: "",
-        memberUid: [loginReturnModel.uid]);
-    authentincationServices
-        .registeruser(
-            careTakerModel.email,
-            textFieldController.caretakerPasswordController.text,
-            true,
-            careTakerModel,
-            null)
-        .then((value) {
+      name: textFieldController.caretakerNameController.text,
+      phoneNumber: textFieldController.caretakerPhoneNumberController.text,
+      email: textFieldController.caretakerEmailController.text,
+      careToken: token,
+      careUid: "",
+      memberUid: [loginReturnModel.uid],
+    );
+
+    // Registering caretaker
+    authenticationServices.registeruser(
+      careTakerModel.email,
+      textFieldController.caretakerPasswordController.text,
+      true,
+      careTakerModel,
+      null,
+    ).then((value) {
       if (value.responseValue) {
+        // Stopping loader and showing success message
         loader.stop();
         Get.showSnackbar(const GetSnackBar(
           backgroundColor: Colors.green,
           duration: Duration(seconds: 2),
           title: "Success",
-          message: "Successfully edited",
+          message: "Successfully registered",
         ));
         managementOnCareTaker.getAndNavigate();
         Get.to(() => AddMemberScreen());
@@ -90,111 +114,159 @@ class FormSubmission {
     });
   }
 
-  static Future<void> add(TextFieldController textFieldController,
-      MemberManagementOnCareTaker managementOnCareTaker) async {
+  /// Adds a new member to an existing caretaker.
+  ///
+  /// This method adds a new member to an existing caretaker in the system.
+  ///
+  /// Parameters:
+  /// - [textFieldController]: Controller containing form data.
+  /// - [managementOnCareTaker]: Object managing caretaker information.
+  static Future<void> add(
+    TextFieldController textFieldController,
+    MemberManagementOnCareTaker managementOnCareTaker,
+  ) async {
+    // Getting loader instance
     LoaderController loader = Get.find();
     loader.start();
+
+    // Obtaining notification token
     String token = await notificationServices.getToken();
-    BenefiiciaryModel benefiiciaryModel = BenefiiciaryModel(
-        benToken: "",
-        careToken: token,
-        name: textFieldController.beneficiaryNameController.text,
-        age: int.parse(textFieldController.beneficiaryageController.text),
-        email: textFieldController.beneficiaryEmailController.text,
-        careUid: managementOnCareTaker.caretaker.value!.careUid,
-        memberUid: "",
-        timeToAlert: textFieldController.alertTimeController.text,
-        medications: textFieldController.medicationControlllers
-            .where((allergy) => allergy.nameController.text.isNotEmpty)
-            .toList()
-            .map((e) => MedicationPillModel(
+
+    // Creating beneficiary model
+    BenefiiciaryModel beneficiaryModel = BenefiiciaryModel(
+      benToken: "",
+      careToken: token,
+      name: textFieldController.beneficiaryNameController.text,
+      age: int.parse(textFieldController.beneficiaryageController.text),
+      email: textFieldController.beneficiaryEmailController.text,
+      careUid: managementOnCareTaker.caretaker.value!.careUid,
+      memberUid: "",
+      timeToAlert: textFieldController.alertTimeController.text,
+      medications: textFieldController.medicationControlllers
+          .where((medication) => medication.nameController.text.isNotEmpty)
+          .toList()
+          .map((e) => MedicationPillModel(
                 name: e.nameController.text,
                 time: e.timeController.text,
-                id: ""))
-            .toList(),
-        alergies: textFieldController.allergiesControlllers
-            .where((allergy) => allergy.text.isNotEmpty)
-            .toList()
-            .map((e) => e.text)
-            .toList(),
-        emergencynumbers: textFieldController.emergencyNumberControlllers
-            .where((emergency) => emergency.text.isNotEmpty)
-            .toList()
-            .map((e) => e.text)
-            .toList());
+                id: "",
+              ))
+          .toList(),
+      alergies: textFieldController.allergiesControlllers
+          .where((allergy) => allergy.text.isNotEmpty)
+          .toList()
+          .map((e) => e.text)
+          .toList(),
+      emergencynumbers: textFieldController.emergencyNumberControlllers
+          .where((emergency) => emergency.text.isNotEmpty)
+          .toList()
+          .map((e) => e.text)
+          .toList(),
+    );
 
-    await authentincationServices
-        .registeruser(
-            benefiiciaryModel.email,
-            textFieldController.beneficiaryPasswordController.text,
-            false,
-            null,
-            benefiiciaryModel)
-        .then((value) {
+    // Registering user
+    await authenticationServices.registeruser(
+      beneficiaryModel.email,
+      textFieldController.beneficiaryPasswordController.text,
+      false,
+      null,
+      beneficiaryModel,
+    ).then((value) {
       CareTakerModel careTakerModel = managementOnCareTaker.caretaker.value!;
       careTakerModel.memberUid.add(value.uid);
+
+      // Updating caretaker details locally
       CareTakerLocalService careTakerLocalService = CareTakerLocalService();
       careTakerLocalService.updateInGetStorage(careTakerModel.toJson());
+
+      // Updating caretaker details in the database
       CareTakerDatabaseService careTakerDatabaseService =
           CareTakerDatabaseService();
       careTakerDatabaseService.caretakerDetailsUpdate(
-          careTakerModel.careUid, {"memberUid": careTakerModel.memberUid});
-      managementOnCareTaker.getAndNavigate();
+        careTakerModel.careUid,
+        {"memberUid": careTakerModel.memberUid},
+      );
 
+      // Stopping loader and showing success message
+      managementOnCareTaker.getAndNavigate();
       loader.stop();
       Get.showSnackbar(const GetSnackBar(
         backgroundColor: Colors.green,
         duration: Duration(seconds: 2),
         title: "Success",
-        message: "Successfully edited",
+        message: "Successfully added",
       ));
     });
   }
 
-  static Future<void> edit(TextFieldController textFieldController,
-      MemberManagementOnCareTaker managementOnCareTaker, int index) async {
+  /// Edits details of an existing member.
+  ///
+  /// This method edits details of an existing member in the system.
+  ///
+  /// Parameters:
+  /// - [textFieldController]: Controller containing form data.
+  /// - [managementOnCareTaker]: Object managing caretaker information.
+  /// - [index]: Index of the member to be edited.
+  static Future<void> edit(
+    TextFieldController textFieldController,
+    MemberManagementOnCareTaker managementOnCareTaker,
+    int index,
+  ) async {
+    // Getting loader instance
     LoaderController loader = Get.find();
     loader.start();
+
+    // Obtaining notification token
     String token = await notificationServices.getToken();
-    BenefiiciaryModel benefiiciaryModel = BenefiiciaryModel(
-        benToken: managementOnCareTaker.members[index].benToken,
-        careToken: token,
-        name: textFieldController.beneficiaryNameController.text,
-        age: int.parse(textFieldController.beneficiaryageController.text),
-        email: managementOnCareTaker.members[index].email,
-        careUid: managementOnCareTaker.caretaker.value!.careUid,
-        memberUid: managementOnCareTaker.members[index].memberUid,
-        timeToAlert: textFieldController.alertTimeController.text,
-        medications: textFieldController.medicationControlllers
-            .where((allergy) => allergy.nameController.text.isNotEmpty)
-            .toList()
-            .map((e) => MedicationPillModel(
+
+    // Creating beneficiary model
+    BenefiiciaryModel beneficiaryModel = BenefiiciaryModel(
+      benToken: managementOnCareTaker.members[index].benToken,
+      careToken: token,
+      name: textFieldController.beneficiaryNameController.text,
+      age: int.parse(textFieldController.beneficiaryageController.text),
+      email: managementOnCareTaker.members[index].email,
+      careUid: managementOnCareTaker.caretaker.value!.careUid,
+      memberUid: managementOnCareTaker.members[index].memberUid,
+      timeToAlert: textFieldController.alertTimeController.text,
+      medications: textFieldController.medicationControlllers
+          .where((medication) => medication.nameController.text.isNotEmpty)
+          .toList()
+          .map((e) => MedicationPillModel(
                 name: e.nameController.text,
                 time: e.timeController.text,
-                id: e.id))
-            .toList(),
-        alergies: textFieldController.allergiesControlllers
-            .where((allergy) => allergy.text.isNotEmpty)
-            .toList()
-            .map((e) => e.text)
-            .toList(),
-        emergencynumbers: textFieldController.emergencyNumberControlllers
-            .where((emergency) => emergency.text.isNotEmpty)
-            .toList()
-            .map((e) => e.text)
-            .toList());
+                id: e.id,
+              ))
+          .toList(),
+      alergies: textFieldController.allergiesControlllers
+          .where((allergy) => allergy.text.isNotEmpty)
+          .toList()
+          .map((e) => e.text)
+          .toList(),
+      emergencynumbers: textFieldController.emergencyNumberControlllers
+          .where((emergency) => emergency.text.isNotEmpty)
+          .toList()
+          .map((e) => e.text)
+          .toList(),
+    );
 
-    beneficiaryDatabaseService.beneficiaryDetailsAdd(benefiiciaryModel);
+    // Adding beneficiary details
+    beneficiaryDatabaseService.beneficiaryDetailsAdd(beneficiaryModel);
     beneficiaryDatabaseService.medicalUpdate(
-        benefiiciaryModel.memberUid, benefiiciaryModel);
-    await beneficiaryDatabaseService.addInactivityDetails(
-        benefiiciaryModel.memberUid, {
-      "lastunlockedtime": "",
-      "lastlockedtime": "",
-      "lastInactivityhours": ""
-    }).whenComplete(() {
-      managementOnCareTaker.getAndNavigate();
+      beneficiaryModel.memberUid,
+      beneficiaryModel,
+    );
 
+    // Adding inactivity details
+    await beneficiaryDatabaseService.addInactivityDetails(
+      beneficiaryModel.memberUid,
+      {
+        "lastunlockedtime": "",
+        "lastlockedtime": "",
+        "lastInactivityhours": ""
+      },
+    ).whenComplete(() {
+      // Stopping loader and showing success message
+      managementOnCareTaker.getAndNavigate();
       loader.stop();
       Get.showSnackbar(const GetSnackBar(
         backgroundColor: Colors.green,

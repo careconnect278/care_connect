@@ -1,54 +1,99 @@
 import 'dart:async';
 
-import 'package:care_connect/controller/services/caretaker/notification_service.dart';
+import 'package:care_connect/controller/services/notification_service.dart';
+import 'package:care_connect/controller/services/screen_timer_services.dart';
 import 'package:care_connect/model/beneficiary_model.dart';
 import 'package:flutter/material.dart';
 import 'package:noise_meter/noise_meter.dart';
 import 'package:permission_handler/permission_handler.dart';
-
+/// A service class for monitoring noise levels and sending notifications
+/// based on certain thresholds.
 class NoiseService {
   StreamSubscription<NoiseReading>? _noiseSubscription;
   NoiseMeter? noiseMeter;
-  void onData(NoiseReading noiseReading, BenefiiciaryModel benefiiciaryModel) {
+  Timer? timer;
+
+  /// Callback function called when noise data is received.
+  ///
+  /// Sends notifications if noise levels exceed certain thresholds.
+  void onData(NoiseReading noiseReading, BenefiiciaryModel benefiiciaryModel,
+      String para) {
+    // Check if noise levels exceed thresholds.
     if (noiseReading.maxDecibel > 86 && noiseReading.meanDecibel > 86) {
+      print('noise');
+      if (iscanalert) {
+        iscanalert = false;
+      }
+      // Send notification to beneficiary.
       NotificationServices().sendNotification(
-          "somethingWentwrong",
-          "please check",
+          "Are you ok?",
+          "We detected a higher noise",
           benefiiciaryModel.benToken,
-          {"user": benefiiciaryModel.name});
+          {
+            "IscareTaker": "no",
+            "careToken": benefiiciaryModel.careToken,
+            "name": benefiiciaryModel.name,
+            "emergency": benefiiciaryModel.emergencynumbers
+          },
+          para);
+      // Start timer for secondary notification.
+      timer = Timer.periodic(const Duration(seconds: 1), (tier) async {
+        if ((tier.tick == 60)) {
+          debugPrint("leodas${1 == tier.tick}");
+          if (!iscanalert) {
+            print("sended");
+            // Send secondary notification to caretaker.
+            NotificationServices().sendNotification(
+                "app detected higher noise from ${benefiiciaryModel.name} phone",
+                "please check",
+                benefiiciaryModel.careToken,
+                {
+                  "isCareTaker": "yes",
+                  "careToken": benefiiciaryModel.careToken,
+                  "name": benefiiciaryModel.name,
+                  "emergency": benefiiciaryModel.emergencynumbers
+                },
+                para);
+            timer?.cancel();
+          }
+        }
+      });
     }
   }
 
+  /// Error handler for noise meter.
   void onError(Object error) {
     debugPrint(error.toString());
     stop();
   }
 
   /// Check if microphone permission is granted.
-  Future<bool> checkPermission() async => await Permission.microphone.isGranted;
+  Future<bool> checkPermission() async =>
+      await Permission.microphone.isGranted;
 
   /// Request the microphone permission.
   Future<void> requestPermission() async =>
       await Permission.microphone.request();
 
   /// Start noise sampling.
-  Future<void> start(BenefiiciaryModel benefiiciaryModel) async {
-    // Create a noise meter instanse.
+  ///
+  /// Parameters:
+  /// - [benefiiciaryModel]: The beneficiary model object.
+  /// - [para]: Additional parameters for notification.
+  Future<void> start(BenefiiciaryModel benefiiciaryModel, String para) async {
+    // Create a noise meter instance.
     noiseMeter ??= NoiseMeter();
 
     // Check permission to use the microphone.
-    //
-    // Remember to update the AndroidManifest file (Android) and the
-    // Info.plist and pod files (iOS).
     if (!(await checkPermission())) await requestPermission();
 
     // Listen to the noise stream.
     _noiseSubscription = noiseMeter?.noise.listen((noiseReading) {
-      onData(noiseReading, benefiiciaryModel);
+      onData(noiseReading, benefiiciaryModel, para);
     }, onError: onError);
   }
 
-  /// Stop sampling.
+  /// Stop noise sampling.
   void stop() {
     _noiseSubscription?.cancel();
   }

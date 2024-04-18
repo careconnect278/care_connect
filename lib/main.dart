@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:care_connect/controller/implementation/loader_controller.dart';
 import 'package:care_connect/controller/implementation/text_field_controller.dart';
-import 'package:care_connect/controller/services/caretaker/notification_service.dart';
+import 'package:care_connect/controller/services/notification_service.dart';
 import 'package:care_connect/controller/services/screen_timer_services.dart';
 import 'package:care_connect/firebase_options.dart';
 import 'package:care_connect/view/add_member_screen.dart';
@@ -20,50 +20,72 @@ import 'package:permission_handler/permission_handler.dart';
 
 import 'controller/implementation/member_mangement_caretaker_phone.dart';
 
+// GlobalKey to access the NavigatorState anywhere in the app
 final navigatorKey = GlobalKey<NavigatorState>();
+
+// Entry point of the application
 void main() async {
+  // Ensure that widgets binding is initialized
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Request necessary permissions for the app
   await [
     Permission.phone,
     Permission.sms,
-    Permission.backgroundRefresh,
-    Permission.notification
+    Permission.notification,
+    Permission.microphone
   ].request();
 
+  // Initialize Firebase with default options
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Initialize GetStorage for local storage
   await GetStorage.init();
+
+  // Initialize the background service
   await initializeService();
+
+  // Initialize notifications service
   NotificationServices().initNotifications();
+
+  // Initialize TextFieldController for text field management
   Get.put(TextFieldController());
+
+  // Initialize LoaderController for loader management
   Get.put(LoaderController());
+
+  // Initialize MemberManagementOnCareTaker controller for managing members
   final managementOnCareTaker = Get.put(MemberManagementOnCareTaker());
+
+  // Run the application
   runApp(MyApp(
     managementOnCareTaker: managementOnCareTaker,
-  
   ));
 }
 
+// MyApp class, the root of the application
 class MyApp extends StatelessWidget {
   final MemberManagementOnCareTaker managementOnCareTaker;
- 
+
+  // Constructor for MyApp
   const MyApp({
-    super.key,
+    Key? key,
     required this.managementOnCareTaker,
- 
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // Use FlutterSizer for responsive UI design
     return FlutterSizer(
       builder: (context, orientation, screenType) {
         return GetMaterialApp(
+          // Define routes for the app
           routes: {AlertScreen.route: (context) => AlertScreen()},
           debugShowCheckedModeBanner: false,
           home: Obx(
             () => managementOnCareTaker.loginState.value == LoginState.beneficiary
                 ? BeneficiaryHomeScreen()
-                : managementOnCareTaker.loginState.value ==
-                        LoginState.caretaker
+                : managementOnCareTaker.loginState.value == LoginState.caretaker
                     ? AddMemberScreen()
                     : const WelcomeScreen(),
           ),
@@ -73,24 +95,34 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// Function to initialize the background service
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
 
+  // Configure background service for Android
   await service.configure(
-      iosConfiguration: IosConfiguration(),
-      androidConfiguration: AndroidConfiguration(
-          onStart: onStart,
-          isForegroundMode: true,
-          autoStart: true,
-          autoStartOnBoot: true));
+    iosConfiguration: IosConfiguration(),
+    androidConfiguration: AndroidConfiguration(
+      onStart: onStart,
+      isForegroundMode: true,
+      autoStart: true,
+      autoStartOnBoot: true,
+    ),
+  );
+
+  // Start the background service
   service.startService();
 }
 
+// Entry point for the background service
 @pragma('vm-entry-point')
 void onStart(ServiceInstance service) async {
+  // Ensure that Dart plugin is initialized
   DartPluginRegistrant.ensureInitialized();
 
+  // If the service is an instance of AndroidServiceInstance
   if (service is AndroidServiceInstance) {
+    // Listen for events to set the service as foreground or background
     service.on('setAsForeground').listen((event) {
       service.setAsForegroundService();
     });
@@ -98,25 +130,27 @@ void onStart(ServiceInstance service) async {
       service.setAsBackgroundService();
     });
   }
+
+  // Listen for event to stop the service
   service.on('stopService').listen((event) {
     service.stopSelf();
   });
+
+  // If the service is an instance of AndroidServiceInstance
   if (service is AndroidServiceInstance) {
+    // Check if the service is running in foreground
     if (await service.isForegroundService()) {
-      await Firebase.initializeApp(
-              options: DefaultFirebaseOptions.currentPlatform)
-          .whenComplete(() async {
-        await GetStorage.init().whenComplete(() {
-          ScreenTimerServices screenTimerServices = ScreenTimerServices();
-          screenTimerServices.startListening();
-        });
+      // Initialize Firebase and GetStorage
+      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+      await GetStorage.init();
 
-        debugPrint('object');
-      });
+      // Start listening for screen events in the background
+      ScreenTimerServices screenTimerServices = ScreenTimerServices();
+      screenTimerServices.startListening("background");
 
-      debugPrint("object");
+      debugPrint('Background service started');
     } else {
-      debugPrint('objecjdfbuufht');
+      debugPrint('Background service not in foreground');
     }
   }
 }

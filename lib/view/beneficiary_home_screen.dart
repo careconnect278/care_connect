@@ -81,7 +81,7 @@ class BeneficiaryHomeScreen extends StatelessWidget {
                                   ),
                                   GestureDetector(
                                       onTap: () {
-                                        sendSS("message", [
+                                        sendSS("message From ", [
                                           managementOnCareTaker.beneficiary
                                               .value!.emergencynumbers[index]
                                         ]);

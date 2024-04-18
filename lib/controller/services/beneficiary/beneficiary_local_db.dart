@@ -31,7 +31,7 @@ class BeneficiaryLocalService {
 
   // Update in GetStorage
   void updateInGetStorage(Map<String, dynamic> data) {
-    // Assuming you want to update with medications
+    // Assuming you want to update with bendata
     box.write('beneficiary', data);
   }
 

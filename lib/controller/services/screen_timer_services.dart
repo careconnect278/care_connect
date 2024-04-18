@@ -1,108 +1,139 @@
+
 import 'dart:async';
 import 'package:care_connect/controller/services/beneficiary/beneficiary_db.dart';
 import 'package:care_connect/controller/services/beneficiary/beneficiary_local_db.dart';
-import 'package:care_connect/controller/services/caretaker/notification_service.dart';
+import 'package:care_connect/controller/services/notification_service.dart';
 import 'package:care_connect/controller/services/noise_service.dart';
 import 'package:care_connect/model/beneficiary_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:screen_state/screen_state.dart';
 
+// Global variable to keep track of whether an alert can be sent or not
+bool iscanalert = false;
+
+// Class responsible for managing screen timer services
 class ScreenTimerServices {
-  Timer? timer;
-  int seconds = 0;
+  Timer? timer; // Timer instance
+  int seconds = 0; // Number of seconds elapsed
   BeneficiaryLocalService beneficiaryLocalService = BeneficiaryLocalService();
   BeneficiaryDatabaseService beneficiaryDatabaseService =
       BeneficiaryDatabaseService();
-  String formattedTime = "00:00:00";
-  final Screen _screen = Screen();
-  StreamSubscription<ScreenStateEvent>? subscription;
-  bool started = false;
-  void startTimer(BenefiiciaryModel benefiiciaryModel) {
-    seconds = 0;
-    formattedTime = "00:00:00";
+  String formattedTime = "00:00:00"; // Formatted time string
+  final Screen _screen = Screen(); // Screen state instance
+  StreamSubscription<ScreenStateEvent>? subscription; // Subscription to screen state events
+
+  // Method to start the timer for a beneficiary
+  void startTimer(BenefiiciaryModel benefiiciaryModel, String para) {
+    seconds = 0; // Reset seconds
+    formattedTime = "00:00:00"; // Reset formatted time string
+    // Convert the alert time to seconds
     int conditionSeconds = timeStringToSeconds(benefiiciaryModel.timeToAlert);
+    // Debug print the condition seconds (optional)
     debugPrint(conditionSeconds.toString());
+    // Start a periodic timer with a duration of 1 second
     timer = Timer.periodic(const Duration(seconds: 1), (tier) async {
-      seconds++;
+      seconds++; // Increment seconds
+      // Format the elapsed time into HH:mm:ss format
       formattedTime = DateFormat('HH:mm:ss')
           .format(DateTime(0).add(Duration(seconds: seconds)));
+      // If the elapsed time matches the condition time for sending an alert
       if ((tier.tick == conditionSeconds)) {
-        // debugPrint("leodas${1 == tier.tick}");
+        if (iscanalert) {
+          iscanalert = false;
+        }
+        // Send a notification to the beneficiary
         NotificationServices().sendNotification(
-            "somethingWentwrong",
-            "please check",
+            "Are you ok ${benefiiciaryModel.name}",
+            "you are inactive for some time",
             benefiiciaryModel.benToken,
-            {"user": benefiiciaryModel.name});
+            {
+              "isCareTaker": "no",
+              "careToken": benefiiciaryModel.careToken,
+              "name": benefiiciaryModel.name,
+              "emergency": benefiiciaryModel.emergencynumbers
+            },
+            para);
+      }
+      // If the elapsed time matches the condition time plus an extra minute
+      if (tier.tick == (conditionSeconds + 60)) {
+        if (!iscanalert) {
+          // Send a notification to the caregiver
+          NotificationServices().sendNotification(
+              "${benefiiciaryModel.name} is inactive",
+              "please check",
+              benefiiciaryModel.careToken,
+              {
+                "isCareTaker": "yes",
+                "careToken": benefiiciaryModel.careToken,
+                "name": benefiiciaryModel.name,
+                "emergency": benefiiciaryModel.emergencynumbers,
+              },
+              para);
+        }
       }
     });
   }
 
-  // static const platform = MethodChannel('com.example.care_connect/screenState');
-
-  // void startListening() async {
-  //   try {
-  //     await platform.invokeMethod('startListening');
-  //     debugPrint('Screen listening started');
-  //   } on PlatformException catch (e) {
-  //     debugPrint('Failed to start listening: ${e.message}');
-  //   }
-  // }
-
-  // void stopListening() async {
-  //   try {
-  //     await platform.invokeMethod('stopListening');
-  //     debugPrint('Screen listening stopped');
-  //   } on PlatformException catch (e) {
-  //     debugPrint('Failed to stop listening: ${e.message}');
-  //   }
-  // }
-
-  // Start listening to screen events this working on background and foreground using flutter_background_service,
-  void startListening() async {
-    debugPrint('objecaaaat');
+  // Method to start listening to screen events
+  void startListening(String para) async {
     try {
+      // Check if beneficiary data is available
       if (beneficiaryLocalService.box.hasData("beneficiary")) {
         debugPrint("nujmbjnj");
+        // Retrieve beneficiary data from local storage
         BenefiiciaryModel benefiiciaryModel =
             beneficiaryLocalService.retrieveFromGetStorage();
+        // Start noise service for detecting beneficiary activity
         NoiseService noiseService = NoiseService();
-        noiseService.start(benefiiciaryModel);
+        noiseService.start(benefiiciaryModel, para);
+        // Subscribe to screen state events
         _screen.screenStateStream!.listen((event) {
-          onData(event, benefiiciaryModel);
+          onData(event, benefiiciaryModel, para);
         });
-        started = true;
+        // Set iscanalert to true, indicating that alerts can be sent
+        iscanalert = true;
       } else {
+        // Debug print if beneficiary data is not available
         debugPrint(
             beneficiaryLocalService.box.hasData("beneficiary").toString());
       }
     } on ScreenStateException catch (exception) {
+      // Handle ScreenStateException if any
       debugPrint(exception.toString());
     }
   }
 
-  void onData(ScreenStateEvent event, BenefiiciaryModel benefiiciaryModel) {
+  // Method to handle screen state events
+  void onData(ScreenStateEvent event, BenefiiciaryModel benefiiciaryModel,
+      String para) {
     debugPrint("ondata");
+    // If the screen is turned off
     if (event == ScreenStateEvent.SCREEN_OFF) {
       debugPrint('object');
-      formattedTime = DateFormat('HH:mm:ss').format(DateTime.now());
+      // Update beneficiary inactivity details in the database
       beneficiaryDatabaseService.inactivityDetailsUpdate(
           benefiiciaryModel.memberUid,
           {"lastlockedtime": DateTime.now().toString()});
-      startTimer(benefiiciaryModel);
-    } else if (event == ScreenStateEvent.SCREEN_UNLOCKED) {
+      // Start the timer for the beneficiary
+      startTimer(benefiiciaryModel, para);
+    } 
+    // If the screen is unlocked
+    else if (event == ScreenStateEvent.SCREEN_UNLOCKED) {
       try {
+        // Cancel the timer if it's running
         timer == null
             ? () {
                 debugPrint("nu");
               }
             : timer!.cancel();
       } catch (e) {
+        // Handle any exceptions if occurred
         debugPrint(e.toString());
       }
       debugPrint(timer!.tick.toString());
       debugPrint('unloacked');
-      formattedTime = DateFormat('HH:mm:ss').format(DateTime.now());
+      // Update beneficiary inactivity details in the database
       beneficiaryDatabaseService
           .inactivityDetailsUpdate(benefiiciaryModel.memberUid, {
         "lastunlockedtime": DateTime.now().toString(),
@@ -112,6 +143,7 @@ class ScreenTimerServices {
   }
 }
 
+// Method to convert time string (HH:mm format) to seconds
 int timeStringToSeconds(String timeString) {
   List<String> parts = timeString.split(':');
   int hours = int.parse(parts[0]);
