@@ -5,6 +5,8 @@ import 'package:care_connect/controller/services/caretaker/care_taker_local_db.d
 import 'package:care_connect/controller/services/screen_timer_services.dart';
 import 'package:care_connect/model/care_taker_model.dart';
 import 'package:care_connect/model/inactivity_model.dart';
+import 'package:care_connect/view/login_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -79,7 +81,6 @@ class MemberManagementOnCareTaker extends GetxController {
       beneficiaryLocalService.saveToGetStorage(benefiiciaryModel.toJson(true));
       debugPrint("firebase${benefiiciaryModel.toJson(true)}");
       ScreenTimerServices().startListening("init");
-
     } else {
       loginState.value = LoginState.login;
     }
@@ -89,6 +90,15 @@ class MemberManagementOnCareTaker extends GetxController {
     beneficiaryDatabaseService.getInactivityDetailsStream(uid).listen((event) {
       inactivitydetails.value = InactivityDetailsModel.fromJson(event[0]);
     });
+  }
+
+  logout() async{
+    careTakerLocalService.deleteFromGetStorage();
+    caretaker.value = null;
+    members.clear();
+    await FirebaseAuth.instance.signOut();
+
+    Get.to(() => LoginScreen(isCaretaker: true));
   }
 }
 

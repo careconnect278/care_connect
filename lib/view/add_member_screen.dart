@@ -18,7 +18,7 @@ class AddMemberScreen extends StatelessWidget {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        appBar: const CustomAppbar(),
+        appBar: const CustomAppbar(isAppBar: true,),
         body: Padding(
           padding: EdgeInsets.symmetric(horizontal: 8.w),
           child: Column(

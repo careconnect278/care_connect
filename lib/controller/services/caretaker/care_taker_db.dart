@@ -33,6 +33,7 @@ class CareTakerDatabaseService {
       debugPrint(e.toString());
     }
   }
+  
 
   /// Retrieves CareTaker details from the Firestore database.
   ///

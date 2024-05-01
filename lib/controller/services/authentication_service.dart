@@ -38,6 +38,7 @@ class AuthentincationServices {
       if (user != null) {
         final token = await NotificationServices().getToken();
         if (isCaretaker) {
+          memberManagementOnCareTaker.members.clear();
           // If the user is a caretaker
           CareTakerModel careTakerModel =
               await careTakerDatabaseService.getcareDetails(user.uid);
@@ -53,17 +54,19 @@ class AuthentincationServices {
             benefiiciaryModel.careToken = token;
             memberManagementOnCareTaker.members.add(benefiiciaryModel);
           }
+          memberManagementOnCareTaker.members.clear();
           // Update caretaker details in local storage and navigate
           memberManagementOnCareTaker.caretaker.value = careTakerModel;
           careTakerLocalService.saveToGetStorage(careTakerModel.toJson());
-          memberManagementOnCareTaker.getAndNavigate();
+          // memberManagementOnCareTaker.getAndNavigate();
         } else {
           // If the user is a beneficiary
           BenefiiciaryModel benefiiciaryModel =
               await beneficiaryDatabaseService.getBenDetails(user.uid);
           benefiiciaryModel.benToken = token;
+          benefiiciaryModel.random=randomCode();
           beneficiaryDatabaseService
-              .beneficiaryDetailsUpdate(user.uid, {"benToken": token});
+              .beneficiaryDetailsUpdate(user.uid, {"benToken": token,"random":benefiiciaryModel.random});
           beneficiaryLocalService
               .saveToGetStorage(benefiiciaryModel.toJson(true));
 
@@ -85,6 +88,7 @@ class AuthentincationServices {
     } on FirebaseAuthException catch (e) {
       // Show error message if login fails
       Get.showSnackbar(GetSnackBar(
+        duration: const Duration(seconds: 2),
         title: e.code,
         message: e.message,
       ));
@@ -138,11 +142,63 @@ class AuthentincationServices {
     } on FirebaseAuthException catch (e) {
       // Show error message if registration fails
       Get.showSnackbar(GetSnackBar(
-        duration: const Duration(seconds: 3),
+        duration: const Duration(seconds: 2),
         title: e.code,
         message: e.message,
       ));
       return LoginReturnModel(uid: "", responseValue: false);
+    }
+  }
+
+  Future<void> resetPassword({required String email}) async {
+    try {
+      await firebaseAuth.sendPasswordResetEmail(email: email);
+      Get.showSnackbar(
+        GetSnackBar(
+          duration: const Duration(seconds: 2),
+          title: "Password reset email sent to:",
+          message: email,
+        ),
+      );
+    } catch (e) {
+      String errorMessage =
+          "An error occurred while sending password reset email.";
+      // You can provide more descriptive error messages based on the error type
+      if (e is FirebaseAuthException) {
+        switch (e.code) {
+          case 'user-not-found':
+            errorMessage = "No user found with this email.";
+            break;
+          case 'invalid-email':
+            errorMessage = "The email address is invalid.";
+            break;
+          default:
+            errorMessage = "An error occurred: ${e.message}";
+        }
+      }
+      Get.showSnackbar(
+        GetSnackBar(
+          duration: const Duration(seconds: 2),
+          title: errorMessage,
+          message: "---",
+        ),
+      );
+    }
+  }
+
+  Future<bool> isEmailRegistered(String email) async {
+    try {
+      // Fetch sign-in methods for the given email
+      // ignore: deprecated_member_use
+      List<String> signInMethods =
+          await FirebaseAuth.instance.fetchSignInMethodsForEmail(email);
+      print(signInMethods);
+      // If the list is not empty, email is already registered
+      return signInMethods.isNotEmpty;
+    } catch (e) {
+      // Error occurred, handle accordingly
+      print("Error checking email registration: $e");
+      return false;
     }
   }
 }

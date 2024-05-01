@@ -12,7 +12,7 @@ import 'package:get/get.dart';
 class NotificationServices {
   // Instance of FirebaseMessaging
   final firebaseMessging = FirebaseMessaging.instance;
-  
+
   // Android notification channel for local notifications
   AndroidNotificationChannel channel = const AndroidNotificationChannel(
     "high_importance_channel", // id
@@ -107,28 +107,55 @@ class NotificationServices {
 
   // Send notification via FCM
   Future<bool> sendNotification(String title, String body, String to,
-      Map<String, dynamic> data, String para) async {
+      Map<String, dynamic> data, String para, bool isCaretaker) async {
     debugPrint(para);
     try {
       final url = Uri.parse('https://fcm.googleapis.com/fcm/send');
-      final response = await http.post(
-        url,
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-          'Authorization': 'key=$_serverKey',
-        },
-        body: jsonEncode({
-          'notification': {'title': title, 'body': body},
-          'to': to.trim(),
-          'data': data, // Include payload here
-        }),
-      );
+      var jsonEncode2 = jsonEncode({
+        'notification': {'title': title, 'body': body},
+        'to': to.trim(),
+        'data': data, // Include payload here
+      });
+      var headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'key=$_serverKey',
+      };
+      if (isCaretaker) {
+        final response = await http.post(
+          url,
+          headers: headers,
+          body: jsonEncode2,
+        );
 
-      if (response.statusCode == 200) {
-        return true;
+        if (response.statusCode == 200) {
+          isReponded = false;
+          return true;
+        } else {
+          debugPrint('Failed to send notification: ${response.body}');
+          return false;
+        }
       } else {
-        debugPrint('Failed to send notification: ${response.body}');
-        return false;
+        if (isReponded) {
+          return false;
+        }
+        if (!isReponded) {
+          final response = await http.post(
+            url,
+            headers: headers,
+            body: jsonEncode2,
+          );
+
+          if (response.statusCode == 200) {
+            print(isReponded);
+            isReponded = true;
+            return true;
+          } else {
+            debugPrint('Failed to send notification: ${response.body}');
+            return false;
+          }
+        } else {
+          return false;
+        }
       }
     } catch (e) {
       debugPrint('Error sending notification: $e');
@@ -143,3 +170,5 @@ Future handleMessages(RemoteMessage? remoteMessage) async {
   if (remoteMessage == null) return;
   Get.toNamed(AlertScreen.route, arguments: remoteMessage);
 }
+
+bool isReponded = false;

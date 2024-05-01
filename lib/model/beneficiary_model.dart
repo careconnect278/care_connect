@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:care_connect/model/medication_model.dart';
 import 'package:flutter/material.dart';
 
@@ -13,6 +15,7 @@ class BenefiiciaryModel {
   String benToken;
   List<String> alergies;
   List<MedicationPillModel> medications;
+  String? random;
 
   BenefiiciaryModel(
       {required this.name,
@@ -25,7 +28,8 @@ class BenefiiciaryModel {
       required this.benToken,
       required this.careToken,
       required this.emergencynumbers,
-      required this.medications});
+      required this.medications,
+      this.random});
 
   factory BenefiiciaryModel.fromJson(
       Map<String, dynamic> json, List<MedicationPillModel> medications) {
@@ -33,6 +37,7 @@ class BenefiiciaryModel {
     List<dynamic> emergency = json["emergency"];
     debugPrint(json.toString());
     return BenefiiciaryModel(
+        random: json["random"].toString(),
         medications: medications,
         name: json['name'].toString(),
         age: json['age'],
@@ -57,7 +62,8 @@ class BenefiiciaryModel {
       'alergies': alergies,
       "emergency": emergencynumbers,
       "careToken": careToken,
-      "benToken": benToken
+      "benToken": benToken,
+      "random": randomCode()
     };
 
     if (isLocal) {
@@ -73,4 +79,11 @@ class BenefiiciaryModel {
   String toString() {
     return 'BenefiiciaryModel{name: $name, age: $age, email: $email, careUid: $careUid, memberUid: $memberUid, timeToAlert: $timeToAlert}';
   }
+}
+
+String randomCode() {
+  Random random = Random();
+  int randomNumber = random.nextInt(100000); //
+  String dateTime = DateTime.now().toString();
+  return "$randomNumber$dateTime";
 }

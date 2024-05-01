@@ -81,10 +81,14 @@ class BeneficiaryHomeScreen extends StatelessWidget {
                                   ),
                                   GestureDetector(
                                       onTap: () {
-                                        sendSS("message From ", [
-                                          managementOnCareTaker.beneficiary
-                                              .value!.emergencynumbers[index]
-                                        ]);
+                                        sendSS(
+                                            "message From ${managementOnCareTaker.beneficiary.value!.name}",
+                                            [
+                                              managementOnCareTaker
+                                                  .beneficiary
+                                                  .value!
+                                                  .emergencynumbers[index]
+                                            ]);
                                       },
                                       child: const Icon(Icons.message))
                                 ]),

@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'package:care_connect/controller/services/beneficiary/beneficiary_db.dart';
 import 'package:care_connect/controller/services/beneficiary/beneficiary_local_db.dart';
@@ -21,7 +20,8 @@ class ScreenTimerServices {
       BeneficiaryDatabaseService();
   String formattedTime = "00:00:00"; // Formatted time string
   final Screen _screen = Screen(); // Screen state instance
-  StreamSubscription<ScreenStateEvent>? subscription; // Subscription to screen state events
+  StreamSubscription<ScreenStateEvent>?
+      subscription; // Subscription to screen state events
 
   // Method to start the timer for a beneficiary
   void startTimer(BenefiiciaryModel benefiiciaryModel, String para) {
@@ -53,7 +53,8 @@ class ScreenTimerServices {
               "name": benefiiciaryModel.name,
               "emergency": benefiiciaryModel.emergencynumbers
             },
-            para);
+            para,
+            false);
       }
       // If the elapsed time matches the condition time plus an extra minute
       if (tier.tick == (conditionSeconds + 60)) {
@@ -69,7 +70,8 @@ class ScreenTimerServices {
                 "name": benefiiciaryModel.name,
                 "emergency": benefiiciaryModel.emergencynumbers,
               },
-              para);
+              para,
+              true);
         }
       }
     });
@@ -117,7 +119,7 @@ class ScreenTimerServices {
           {"lastlockedtime": DateTime.now().toString()});
       // Start the timer for the beneficiary
       startTimer(benefiiciaryModel, para);
-    } 
+    }
     // If the screen is unlocked
     else if (event == ScreenStateEvent.SCREEN_UNLOCKED) {
       try {

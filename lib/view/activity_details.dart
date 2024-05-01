@@ -10,7 +10,7 @@ class ActivityDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppbar(),
+      appBar: const CustomAppbar(isAppBar: false,),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 8.w),
         child: Obx(

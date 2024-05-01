@@ -6,6 +6,7 @@ import 'package:care_connect/model/beneficiary_model.dart';
 import 'package:flutter/material.dart';
 import 'package:noise_meter/noise_meter.dart';
 import 'package:permission_handler/permission_handler.dart';
+
 /// A service class for monitoring noise levels and sending notifications
 /// based on certain thresholds.
 class NoiseService {
@@ -19,7 +20,7 @@ class NoiseService {
   void onData(NoiseReading noiseReading, BenefiiciaryModel benefiiciaryModel,
       String para) {
     // Check if noise levels exceed thresholds.
-    if (noiseReading.maxDecibel > 86 && noiseReading.meanDecibel > 86) {
+    if (noiseReading.maxDecibel > 100 && noiseReading.meanDecibel > 100) {
       print('noise');
       if (iscanalert) {
         iscanalert = false;
@@ -35,7 +36,8 @@ class NoiseService {
             "name": benefiiciaryModel.name,
             "emergency": benefiiciaryModel.emergencynumbers
           },
-          para);
+          para,
+          false);
       // Start timer for secondary notification.
       timer = Timer.periodic(const Duration(seconds: 1), (tier) async {
         if ((tier.tick == 60)) {
@@ -53,7 +55,8 @@ class NoiseService {
                   "name": benefiiciaryModel.name,
                   "emergency": benefiiciaryModel.emergencynumbers
                 },
-                para);
+                para,
+                true);
             timer?.cancel();
           }
         }
@@ -68,8 +71,7 @@ class NoiseService {
   }
 
   /// Check if microphone permission is granted.
-  Future<bool> checkPermission() async =>
-      await Permission.microphone.isGranted;
+  Future<bool> checkPermission() async => await Permission.microphone.isGranted;
 
   /// Request the microphone permission.
   Future<void> requestPermission() async =>
