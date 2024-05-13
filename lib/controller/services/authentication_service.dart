@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use, avoid_print
+
 import 'package:care_connect/controller/services/beneficiary/beneficiary_db.dart';
 import 'package:care_connect/controller/services/beneficiary/beneficiary_local_db.dart';
 import 'package:care_connect/controller/services/caretaker/care_taker_db.dart';
@@ -10,6 +12,7 @@ import 'package:care_connect/model/login_return_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
+import '../implementation/loader_controller.dart';
 import '../implementation/member_mangement_caretaker_phone.dart';
 
 /// Class responsible for handling authentication services.
@@ -29,6 +32,7 @@ class AuthentincationServices {
   /// Returns a Future<bool> indicating the success or failure of the login attempt.
   Future<bool> loginuser(
       String email, String password, bool isCaretaker) async {
+    LoaderController loader = Get.find();
     try {
       MemberManagementOnCareTaker memberManagementOnCareTaker = Get.find();
       User? user = (await firebaseAuth.signInWithEmailAndPassword(
@@ -64,11 +68,11 @@ class AuthentincationServices {
           BenefiiciaryModel benefiiciaryModel =
               await beneficiaryDatabaseService.getBenDetails(user.uid);
           benefiiciaryModel.benToken = token;
-          benefiiciaryModel.random=randomCode();
-          beneficiaryDatabaseService
-              .beneficiaryDetailsUpdate(user.uid, {"benToken": token,"random":benefiiciaryModel.random});
+          benefiiciaryModel.random = randomCode();
+          beneficiaryDatabaseService.beneficiaryDetailsUpdate(user.uid,
+              {"benToken": token, "random": benefiiciaryModel.random});
           beneficiaryLocalService
-              .saveToGetStorage(benefiiciaryModel.toJson(true));
+              .saveToGetStorage(benefiiciaryModel.toJson(true, true));
 
           // Update beneficiary details in local storage, add inactivity details, and navigate
           memberManagementOnCareTaker.beneficiary.value = benefiiciaryModel;
@@ -86,6 +90,7 @@ class AuthentincationServices {
         return false;
       }
     } on FirebaseAuthException catch (e) {
+      loader.stop();
       // Show error message if login fails
       Get.showSnackbar(GetSnackBar(
         duration: const Duration(seconds: 2),
@@ -106,6 +111,7 @@ class AuthentincationServices {
       bool careTaker,
       CareTakerModel? careTakerModel,
       BenefiiciaryModel? benefiiciaryModel) async {
+    LoaderController loader = Get.find();
     try {
       User? user = (await firebaseAuth.createUserWithEmailAndPassword(
               email: email, password: password))
@@ -141,6 +147,7 @@ class AuthentincationServices {
       }
     } on FirebaseAuthException catch (e) {
       // Show error message if registration fails
+      loader.stop();
       Get.showSnackbar(GetSnackBar(
         duration: const Duration(seconds: 2),
         title: e.code,
@@ -189,7 +196,7 @@ class AuthentincationServices {
   Future<bool> isEmailRegistered(String email) async {
     try {
       // Fetch sign-in methods for the given email
-      // ignore: deprecated_member_use
+      // ignore:
       List<String> signInMethods =
           await FirebaseAuth.instance.fetchSignInMethodsForEmail(email);
       print(signInMethods);

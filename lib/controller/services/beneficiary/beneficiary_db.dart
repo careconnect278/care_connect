@@ -15,7 +15,7 @@ class BeneficiaryDatabaseService {
     try {
       beneficiaryCollection
           .doc(beneficiaryModel.memberUid)
-          .set(beneficiaryModel.toJson(false));
+          .set(beneficiaryModel.toJson(false, true));
     } catch (e) {
       debugPrint(e.toString());
     }
@@ -39,6 +39,7 @@ class BeneficiaryDatabaseService {
       final a = medicationCollection.doc();
       element.id = a.id;
       a.set(element.toJson());
+      element.time;
     }
     managementOnCareTaker.members.add(beneficiary);
   }

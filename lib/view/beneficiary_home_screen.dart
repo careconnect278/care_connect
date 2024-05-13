@@ -1,4 +1,6 @@
 import 'package:care_connect/controller/implementation/member_mangement_caretaker_phone.dart';
+import 'package:care_connect/controller/services/show_aleergies.dart';
+import 'package:care_connect/view/medical_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:flutter_sizer/flutter_sizer.dart';
@@ -37,6 +39,9 @@ class BeneficiaryHomeScreen extends StatelessWidget {
                         onSubmit: () async {
                           callNumber(managementOnCareTaker
                               .caretaker.value!.phoneNumber);
+                          ShowAllergies showAllergies = ShowAllergies();
+                          showAllergies.updateInGetStorage(true);
+                          Get.to(() => MedicalScreen());
                         },
                         textStyle: TextStyle(
                             fontSize: 20.dp,

@@ -51,7 +51,7 @@ class BenefiiciaryModel {
         careToken: json["careToken"].toString());
   }
 
-  Map<String, dynamic> toJson(bool isLocal) {
+  Map<String, dynamic> toJson(bool isLocal, bool isAuth) {
     var a = {
       'name': name,
       'age': age,
@@ -63,9 +63,14 @@ class BenefiiciaryModel {
       "emergency": emergencynumbers,
       "careToken": careToken,
       "benToken": benToken,
-      "random": randomCode()
     };
-
+    if (isAuth) {
+      a.addAll({"random": randomCode()});
+    } else {
+      if (random != null) {
+        a.addAll({"random": random!});
+      }
+    }
     if (isLocal) {
       a.addAll({
         "medications": medications.map((e) => e.toJson()).toList(),

@@ -1,9 +1,10 @@
+// ignore_for_file: constant_identifier_names, prefer_final_fields
+
 import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:flutter/services.dart';
 
 /// The type of screen state events coming from Android.
-// ignore: constant_identifier_names
 enum ScreenStateEvent { 
   /// Represents the event when the screen is unlocked by the user.
   SCREEN_UNLOCKED, 

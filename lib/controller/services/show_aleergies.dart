@@ -9,6 +9,7 @@ class ShowAllergies {
   bool retrieveFromGetStorage() {
     final a = box.read('ShowAllergy') ?? false;
     debugPrint("showAllergy$a");
+    
     // If medications is a list, cast it to List<Map<String, dynamic>>
     return a;
   }

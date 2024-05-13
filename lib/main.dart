@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:alarm/alarm.dart';
 import 'package:care_connect/controller/implementation/loader_controller.dart';
 import 'package:care_connect/controller/implementation/text_field_controller.dart';
 import 'package:care_connect/controller/services/notification_service.dart';
@@ -8,6 +9,7 @@ import 'package:care_connect/firebase_options.dart';
 import 'package:care_connect/view/add_member_screen.dart';
 import 'package:care_connect/view/alert_screen.dart';
 import 'package:care_connect/view/beneficiary_home_screen.dart';
+import 'package:care_connect/view/medical_screen.dart';
 import 'package:care_connect/view/welcome_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +21,7 @@ import 'package:get_storage/get_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import 'controller/implementation/member_mangement_caretaker_phone.dart';
+import 'controller/services/alarm_service.dart';
 
 // GlobalKey to access the NavigatorState anywhere in the app
 final navigatorKey = GlobalKey<NavigatorState>();
@@ -41,6 +44,7 @@ void main() async {
 
   // Initialize GetStorage for local storage
   await GetStorage.init();
+  await Alarm.init();
 
   // Initialize the background service
   await initializeService();
@@ -52,26 +56,29 @@ void main() async {
   Get.put(TextFieldController());
 
   // Initialize LoaderController for loader management
-  Get.put(LoaderController());
+  final loader = Get.put(LoaderController());
 
   // Initialize MemberManagementOnCareTaker controller for managing members
   final managementOnCareTaker = Get.put(MemberManagementOnCareTaker());
-
+  checkAndroidScheduleExactAlarmPermission();
   // Run the application
   runApp(MyApp(
+    loaderController: loader,
     managementOnCareTaker: managementOnCareTaker,
   ));
 }
 
 // MyApp class, the root of the application
 class MyApp extends StatelessWidget {
+  final LoaderController loaderController;
   final MemberManagementOnCareTaker managementOnCareTaker;
 
   // Constructor for MyApp
   const MyApp({
-    Key? key,
+    super.key,
     required this.managementOnCareTaker,
-  }) : super(key: key);
+    required this.loaderController,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -83,8 +90,11 @@ class MyApp extends StatelessWidget {
           routes: {AlertScreen.route: (context) => AlertScreen()},
           debugShowCheckedModeBanner: false,
           home: Obx(
-            () => managementOnCareTaker.loginState.value == LoginState.beneficiary
-                ? BeneficiaryHomeScreen()
+            () => managementOnCareTaker.loginState.value ==
+                    LoginState.beneficiary
+                ? loaderController.isShowAllergy.value == true
+                    ? MedicalScreen()
+                    : BeneficiaryHomeScreen()
                 : managementOnCareTaker.loginState.value == LoginState.caretaker
                     ? AddMemberScreen()
                     : const WelcomeScreen(),
@@ -116,7 +126,7 @@ Future<void> initializeService() async {
 
 // Entry point for the background service
 @pragma('vm-entry-point')
-void onStart(ServiceInstance service) async {
+Future onStart(ServiceInstance service) async {
   // Ensure that Dart plugin is initialized
   DartPluginRegistrant.ensureInitialized();
 
@@ -141,12 +151,13 @@ void onStart(ServiceInstance service) async {
     // Check if the service is running in foreground
     if (await service.isForegroundService()) {
       // Initialize Firebase and GetStorage
-      await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+      await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform);
       await GetStorage.init();
 
       // Start listening for screen events in the background
       ScreenTimerServices screenTimerServices = ScreenTimerServices();
-      screenTimerServices.startListening("background");
+      await screenTimerServices.startListening("background");
 
       debugPrint('Background service started');
     } else {

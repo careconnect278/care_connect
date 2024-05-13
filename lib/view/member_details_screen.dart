@@ -1,10 +1,11 @@
+// ignore_for_file: avoid_print
+
 import 'package:care_connect/controller/implementation/loader_controller.dart';
 import 'package:care_connect/controller/implementation/text_field_controller.dart';
 import 'package:care_connect/controller/services/form_submisttion.dart';
 import 'package:care_connect/model/pill_field_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_sizer/flutter_sizer.dart';
 import 'package:get/get.dart';
 
@@ -648,14 +649,14 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
                       fontWeight: FontWeight.bold,
                       color: Colors.white),
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 10,
                 ),
-                Icon(
+                const Icon(
                   Icons.logout,
                   color: Colors.white,
                 ),
-                SizedBox(
+                const SizedBox(
                   width: 10,
                 )
               ],

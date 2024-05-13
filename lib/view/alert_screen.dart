@@ -124,14 +124,14 @@ class AlertScreen extends StatelessWidget {
                 child: SlideAction(
                   text: "Send messages \nTo Emergency",
                   onSubmit: () async {
-                    // String name = message!.data["name"];
-                    // List emergency = jsonDecode(message!.data["emergency"]);
-                    // List<String> emergencyNum =
-                    //     emergency.map((e) => e.toString()).toList();
+                    String name = message!.data["name"];
+                    List emergency = jsonDecode(message!.data["emergency"]);
+                    List<String> emergencyNum =
+                        emergency.map((e) => e.toString()).toList();
 
-                    // sendSS("Something wrong for $name,pls check", emergencyNum);
+                    sendSS("Something wrong for $name,pls check", emergencyNum);
 
-                    print(message!.data["isCareTaker"]);
+                    // print(message!.data["isCareTaker"]);
                   },
                   textStyle: TextStyle(
                       fontSize: 15.dp,

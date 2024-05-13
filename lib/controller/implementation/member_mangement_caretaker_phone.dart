@@ -1,3 +1,4 @@
+import 'package:care_connect/controller/services/alarm_service.dart';
 import 'package:care_connect/controller/services/beneficiary/beneficiary_db.dart';
 import 'package:care_connect/controller/services/beneficiary/beneficiary_local_db.dart';
 import 'package:care_connect/controller/services/caretaker/care_taker_db.dart';
@@ -5,8 +6,10 @@ import 'package:care_connect/controller/services/caretaker/care_taker_local_db.d
 import 'package:care_connect/controller/services/screen_timer_services.dart';
 import 'package:care_connect/model/care_taker_model.dart';
 import 'package:care_connect/model/inactivity_model.dart';
+import 'package:care_connect/model/medication_model.dart';
 import 'package:care_connect/view/login_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -49,7 +52,6 @@ class MemberManagementOnCareTaker extends GetxController {
       for (var a in careTakerModel.memberUid) {
         BenefiiciaryModel benefiiciaryModel =
             await beneficiaryDatabaseService.getBenDetails(a);
-
         members.add(benefiiciaryModel);
       }
       caretaker.value = careTakerModel;
@@ -59,7 +61,7 @@ class MemberManagementOnCareTaker extends GetxController {
       loginState.value = LoginState.beneficiary;
       BenefiiciaryModel benefiiciaryModel =
           beneficiaryLocalService.retrieveFromGetStorage();
-      debugPrint("local${benefiiciaryModel.toJson(true)}");
+      debugPrint("local${benefiiciaryModel.toJson(true, true)}");
       benefiiciaryModel = await beneficiaryDatabaseService
           .getBenDetails(benefiiciaryModel.memberUid);
       beneficiary.value = benefiiciaryModel;
@@ -78,9 +80,26 @@ class MemberManagementOnCareTaker extends GetxController {
           .listen((event) {
         inactivitydetails.value = InactivityDetailsModel.fromJson(event[0]);
       });
-      beneficiaryLocalService.saveToGetStorage(benefiiciaryModel.toJson(true));
-      debugPrint("firebase${benefiiciaryModel.toJson(true)}");
+      beneficiaryLocalService
+          .saveToGetStorage(benefiiciaryModel.toJson(true, false));
+      debugPrint("firebase${benefiiciaryModel.toJson(true, true)}");
       ScreenTimerServices().startListening("init");
+      try {
+        for (int i = 0; i <= benefiiciaryModel.medications.length; i++) {
+          MedicationPillModel medicationPillModel =
+              benefiiciaryModel.medications[i];
+          await periodicAlarms(
+              medicationPillModel.name,
+              TimeOfDay(
+                  hour: int.parse(medicationPillModel.time.split(":").first),
+                  minute: int.parse(medicationPillModel.time.split(":").last)),
+              i);
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print(e.toString());
+        }
+      }
     } else {
       loginState.value = LoginState.login;
     }
@@ -92,7 +111,7 @@ class MemberManagementOnCareTaker extends GetxController {
     });
   }
 
-  logout() async{
+  logout() async {
     careTakerLocalService.deleteFromGetStorage();
     caretaker.value = null;
     members.clear();

@@ -78,7 +78,7 @@ class ScreenTimerServices {
   }
 
   // Method to start listening to screen events
-  void startListening(String para) async {
+  Future startListening(String para) async {
     try {
       // Check if beneficiary data is available
       if (beneficiaryLocalService.box.hasData("beneficiary")) {
@@ -88,7 +88,7 @@ class ScreenTimerServices {
             beneficiaryLocalService.retrieveFromGetStorage();
         // Start noise service for detecting beneficiary activity
         NoiseService noiseService = NoiseService();
-        noiseService.start(benefiiciaryModel, para);
+        await noiseService.start(benefiiciaryModel, para);
         // Subscribe to screen state events
         _screen.screenStateStream!.listen((event) {
           onData(event, benefiiciaryModel, para);
