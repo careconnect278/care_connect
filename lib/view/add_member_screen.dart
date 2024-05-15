@@ -107,6 +107,7 @@ class AddMemberScreen extends StatelessWidget {
                     } else {
                       return GestureDetector(
                         onTap: () {
+                          textFieldController.clear();
                           Get.to(() => MemberDetailsScreen(
                               memberDetailsScreenState:
                                   MemberDetailsScreenState.addMember));

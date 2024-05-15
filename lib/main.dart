@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 import 'package:alarm/alarm.dart';
 import 'package:care_connect/controller/implementation/loader_controller.dart';
@@ -44,7 +43,16 @@ void main() async {
 
   // Initialize GetStorage for local storage
   await GetStorage.init();
-  await Alarm.init();
+
+  try {
+    await Alarm.init();
+  } catch (e) {
+    GetSnackBar(
+      duration: Duration(seconds: 5),
+      title: "alarm Errorr ",
+      message: e.toString(),
+    );
+  }
 
   // Initialize the background service
   await initializeService();
@@ -128,7 +136,7 @@ Future<void> initializeService() async {
 @pragma('vm-entry-point')
 Future onStart(ServiceInstance service) async {
   // Ensure that Dart plugin is initialized
-  DartPluginRegistrant.ensureInitialized();
+  // DartPluginRegistrant.ensureInitialized();
 
   // If the service is an instance of AndroidServiceInstance
   if (service is AndroidServiceInstance) {

@@ -43,6 +43,7 @@ class FormSubmission {
 
     // Creating beneficiary model
     BenefiiciaryModel beneficiaryModel = BenefiiciaryModel(
+      noiseDecibel: textFieldController.noiseDecibelController.text,
       benToken: "",
       careToken: token,
       name: textFieldController.beneficiaryNameController.text,
@@ -133,7 +134,7 @@ class FormSubmission {
     String token = await notificationServices.getToken();
 
     // Creating beneficiary model
-    BenefiiciaryModel beneficiaryModel = BenefiiciaryModel(
+    BenefiiciaryModel beneficiaryModel = BenefiiciaryModel(noiseDecibel: textFieldController.noiseDecibelController.text,
       benToken: "",
       careToken: token,
       name: textFieldController.beneficiaryNameController.text,
@@ -219,7 +220,7 @@ class FormSubmission {
     String token = await notificationServices.getToken();
 
     // Creating beneficiary model
-    BenefiiciaryModel beneficiaryModel = BenefiiciaryModel(
+    BenefiiciaryModel beneficiaryModel = BenefiiciaryModel(noiseDecibel: textFieldController.noiseDecibelController.text,
       benToken: managementOnCareTaker.members[index].benToken,
       careToken: token,
       name: textFieldController.beneficiaryNameController.text,

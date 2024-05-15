@@ -16,6 +16,7 @@ class BenefiiciaryModel {
   List<String> alergies;
   List<MedicationPillModel> medications;
   String? random;
+  String? noiseDecibel;
 
   BenefiiciaryModel(
       {required this.name,
@@ -24,7 +25,7 @@ class BenefiiciaryModel {
       required this.careUid,
       required this.memberUid,
       required this.timeToAlert,
-      required this.alergies,
+      required this.alergies,required this.noiseDecibel,
       required this.benToken,
       required this.careToken,
       required this.emergencynumbers,
@@ -37,6 +38,7 @@ class BenefiiciaryModel {
     List<dynamic> emergency = json["emergency"];
     debugPrint(json.toString());
     return BenefiiciaryModel(
+      noiseDecibel: json["noiseDecibel"]==null?"85":json["noiseDecibel"].toString(),
         random: json["random"].toString(),
         medications: medications,
         name: json['name'].toString(),
@@ -53,6 +55,7 @@ class BenefiiciaryModel {
 
   Map<String, dynamic> toJson(bool isLocal, bool isAuth) {
     var a = {
+      "noiseDecibel":noiseDecibel==null?"100":noiseDecibel!.isEmpty?"100":noiseDecibel,
       'name': name,
       'age': age,
       'email': email,

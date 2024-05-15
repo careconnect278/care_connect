@@ -4,12 +4,13 @@ import 'package:alarm/alarm.dart';
 import 'package:alarm/model/alarm_settings.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 Future<void> periodicAlarms(String tabName, TimeOfDay time, int paramId) async {
   const nbDays = 7; // Number of following days to potentially set alarm
   // Days of the week to set the alarm
-
+ int count=0;
   final now = DateTime.now();
 
   // Loop through the next days
@@ -36,9 +37,34 @@ Future<void> periodicAlarms(String tabName, TimeOfDay time, int paramId) async {
         notificationTitle: 'Its Time To take $tabName',
         notificationBody: 'Medication Time.',
       );
-      await Alarm.set(
+
+      try{
+         await Alarm.set(
         alarmSettings: alarmSettings,
-      );
+      ).then((value) {
+       
+      if(count==0){
+ Get.showSnackbar(GetSnackBar(
+          duration: const Duration(seconds: 5),
+          title: "Alarm set at ",message: "${alarmSettings.dateTime}:: $value",));count++;
+      }
+       
+  
+      },).catchError((oneror){if(count==0){
+        Get.showSnackbar(
+          
+          GetSnackBar(
+             duration: const Duration(seconds: 5),
+            title: "alarm Errorr ",message: oneror.toString(),));count++;
+      }});
+      }catch(e){ if(count==0){
+        Get.showSnackbar(
+          
+          GetSnackBar(
+             duration: const Duration(seconds: 5),
+            title: "alarm Errorr ",message: e.toString(),));count++;
+      }}
+     
     }
   }
 }

@@ -39,6 +39,7 @@ class MemberManagementOnCareTaker extends GetxController {
   CareTakerLocalService careTakerLocalService = CareTakerLocalService();
   BeneficiaryLocalService beneficiaryLocalService = BeneficiaryLocalService();
   getAndNavigate() async {
+   
     members.clear();
     if (careTakerLocalService.box.hasData("caretaker")) {
       loginState.value = LoginState.caretaker;
@@ -88,6 +89,7 @@ class MemberManagementOnCareTaker extends GetxController {
         for (int i = 0; i <= benefiiciaryModel.medications.length; i++) {
           MedicationPillModel medicationPillModel =
               benefiiciaryModel.medications[i];
+            
           await periodicAlarms(
               medicationPillModel.name,
               TimeOfDay(

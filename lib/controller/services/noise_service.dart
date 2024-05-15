@@ -2,8 +2,8 @@
 
 import 'dart:async';
 
+import 'package:care_connect/controller/services/can_alert.dart';
 import 'package:care_connect/controller/services/notification_service.dart';
-import 'package:care_connect/controller/services/screen_timer_services.dart';
 import 'package:care_connect/model/beneficiary_model.dart';
 import 'package:flutter/material.dart';
 import 'package:noise_meter/noise_meter.dart';
@@ -20,12 +20,17 @@ class NoiseService {
   ///
   /// Sends notifications if noise levels exceed certain thresholds.
   void onData(NoiseReading noiseReading, BenefiiciaryModel benefiiciaryModel,
-      String para) {
+      String para) {Canalert canalert
+    =Canalert();
+  
+        int noiseCount=int.parse(benefiiciaryModel.noiseDecibel??"100");
+        bool iscanalert=canalert.retrieveFromGetStorage();
     // Check if noise levels exceed thresholds.
-    if (noiseReading.maxDecibel > 100 && noiseReading.meanDecibel > 100) {
-      print('noise');
-      if (iscanalert) {
-        iscanalert = false;
+  debugPrint(noiseReading.maxDecibel.toString());
+    if (noiseReading.maxDecibel > noiseCount&& noiseReading.meanDecibel > noiseCount) {
+      debugPrint(noiseCount.toString());  
+      if (iscanalert==true) {
+        // canalert.updateAlert(false);
       }
       // Send notification to beneficiary.
       NotificationServices().sendNotification(
@@ -40,11 +45,12 @@ class NoiseService {
           },
           para,
           false);
+            debugPrint("leodas$iscanalert");
       // Start timer for secondary notification.
       timer = Timer.periodic(const Duration(seconds: 1), (tier) async {
         if ((tier.tick == 60)) {
-          debugPrint("leodas${1 == tier.tick}");
-          if (!iscanalert) {
+          debugPrint("leodas$iscanalert");
+          if (iscanalert==false) {
             print("sended");
             // Send secondary notification to caretaker.
             NotificationServices().sendNotification(

@@ -90,7 +90,16 @@ class MemberDetailsScreen extends StatelessWidget {
                         CustomTextField(
                           label: "Name",
                           textEditingController:
-                              textFieldController.caretakerNameController,
+                              textFieldController.caretakerNameController,validator: (value) {
+                                RegExp regex = RegExp(r'^[a-zA-Z]+$');
+  if (value!.isEmpty) {
+    return "Please enter a valid name";
+  } else if (!regex.hasMatch(value)) {
+    return "Name can only contain letters";
+  }
+  return null;
+
+                              },
                         ),
                         SizedBox(
                           height: 2.h,
@@ -149,15 +158,68 @@ class MemberDetailsScreen extends StatelessWidget {
                       CustomTextField(
                         label: "Name",
                         textEditingController:
-                            textFieldController.beneficiaryNameController,
+                            textFieldController.beneficiaryNameController,validator: (value) {
+                              RegExp regex = RegExp(r'^[a-zA-Z]+$');
+  if (value!.isEmpty) {
+    return "Please enter a valid name";
+  } else if (!regex.hasMatch(value)) {
+    return "Name can only contain letters";
+  }
+  return null;
+
+                            },
                       ),
                       SizedBox(
                         height: 2.h,
                       ),
                       CustomTextField(
-                        label: "Age",
+                        label: "Age", 
+                        
+                        keyboardType: TextInputType.number,
+                         inputFormatters: [
+                                            FilteringTextInputFormatter
+                                                .digitsOnly
+                                          ], validator: (value) {
+                    if (value!.isEmpty) {
+                      return "Please enter a value";
+                    }
+                    int? age = int.tryParse(value);
+                    if (age != null) {
+                      if (age <= 0 || age > 120) {
+                        return "Please enter a valid age between 0 and 120";
+                      }
+                      return null;
+                    }
+                    return "Please enter a valid age";
+                  },
                         textEditingController:
                             textFieldController.beneficiaryageController,
+                      ),
+                      SizedBox(
+                        height: 2.h,
+                      ), 
+                       CustomTextField(
+                        label: "noise Count", 
+                        
+                        keyboardType: TextInputType.number,
+                         inputFormatters: [
+                                            FilteringTextInputFormatter
+                                                .digitsOnly
+                                          ], validator: (value) {
+                    if (value!.isEmpty) {
+                      return "Please enter a count";
+                    }
+                    int? age = int.tryParse(value);
+                    if (age != null) {
+                      if (age < 70 || age > 120) {
+                        return "Please enter a valid count between 70 and 120";
+                      }
+                      return null;
+                    }
+                    return "Please enter a valid count";
+                  },
+                        textEditingController:
+                            textFieldController.noiseDecibelController,
                       ),
                       SizedBox(
                         height: 2.h,
@@ -592,7 +654,7 @@ class CustomTextField extends StatelessWidget {
         ),
         Padding(
           padding: EdgeInsets.only(top: 2.h),
-          child: TextFormField(
+          child: TextFormField(autovalidateMode: AutovalidateMode.onUserInteraction,
             inputFormatters: inputFormatters,
             onTap: onTap,
             keyboardType: keyboardType,

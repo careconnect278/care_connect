@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:care_connect/controller/implementation/member_mangement_caretaker_phone.dart';
+import 'package:care_connect/controller/services/can_alert.dart';
 import 'package:care_connect/controller/services/notification_service.dart';
 import 'package:care_connect/controller/services/screen_timer_services.dart';
 import 'package:care_connect/view/beneficiary_home_screen.dart';
@@ -66,7 +67,9 @@ class AlertScreen extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {
-                      iscanalert = true;
+                        Canalert canalert
+    =Canalert();
+   canalert.updateAlert(true);
                       isReponded = false;
                       Get.to(() => BeneficiaryHomeScreen());
                     },
@@ -87,7 +90,9 @@ class AlertScreen extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {
-                      iscanalert = true;
+                      Canalert canalert
+    =Canalert();
+   canalert.updateAlert(true);
                       isReponded = false;
                       String token = message!.data["careToken"];
                       String name = message!.data["name"];

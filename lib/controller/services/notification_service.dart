@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'dart:convert';
+import 'package:care_connect/controller/services/can_alert.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -52,7 +53,9 @@ class NotificationServices {
 
     FirebaseMessaging.onBackgroundMessage(handleMessages);
     FirebaseMessaging.onMessageOpenedApp.listen(handleMessages);
-    FirebaseMessaging.onMessage.listen((message) {
+    FirebaseMessaging.onMessage.listen((message) { Canalert canalert
+    =Canalert();
+   canalert.updateAlert(false);
       final notification = message.notification;
       if (notification == null) {
         return;
@@ -169,7 +172,9 @@ class NotificationServices {
 // Function to handle incoming messages
 Future handleMessages(RemoteMessage? remoteMessage) async {
   debugPrint(remoteMessage.toString());
-  if (remoteMessage == null) return;
+  if (remoteMessage == null) return; Canalert canalert
+    =Canalert();
+   canalert.updateAlert(false);
   Get.toNamed(AlertScreen.route, arguments: remoteMessage);
 }
 

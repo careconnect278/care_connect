@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:care_connect/controller/services/beneficiary/beneficiary_db.dart';
 import 'package:care_connect/controller/services/beneficiary/beneficiary_local_db.dart';
+import 'package:care_connect/controller/services/can_alert.dart';
 import 'package:care_connect/controller/services/notification_service.dart';
 import 'package:care_connect/controller/services/noise_service.dart';
 import 'package:care_connect/model/beneficiary_model.dart';
@@ -9,7 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:screen_state/screen_state.dart';
 
 // Global variable to keep track of whether an alert can be sent or not
-bool iscanalert = false;
+
 
 // Class responsible for managing screen timer services
 class ScreenTimerServices {
@@ -25,6 +26,9 @@ class ScreenTimerServices {
 
   // Method to start the timer for a beneficiary
   void startTimer(BenefiiciaryModel benefiiciaryModel, String para) {
+   Canalert canalert
+    =Canalert();
+    
     seconds = 0; // Reset seconds
     formattedTime = "00:00:00"; // Reset formatted time string
     // Convert the alert time to seconds
@@ -38,9 +42,9 @@ class ScreenTimerServices {
       formattedTime = DateFormat('HH:mm:ss')
           .format(DateTime(0).add(Duration(seconds: seconds)));
       // If the elapsed time matches the condition time for sending an alert
-      if ((tier.tick == conditionSeconds)) {
+      if ((tier.tick == conditionSeconds)) {bool iscanalert=canalert.retrieveFromGetStorage();
         if (iscanalert) {
-          iscanalert = false;
+          // canalert.updateAlert(false);
         }
         // Send a notification to the beneficiary
         NotificationServices().sendNotification(
@@ -57,8 +61,8 @@ class ScreenTimerServices {
             false);
       }
       // If the elapsed time matches the condition time plus an extra minute
-      if (tier.tick == (conditionSeconds + 60)) {
-        if (!iscanalert) {
+      if (tier.tick == (conditionSeconds + 60)) { bool alertCan=canalert.retrieveFromGetStorage();
+        if (!alertCan) {
           // Send a notification to the caregiver
           NotificationServices().sendNotification(
               "${benefiiciaryModel.name} is inactive",
@@ -79,6 +83,9 @@ class ScreenTimerServices {
 
   // Method to start listening to screen events
   Future startListening(String para) async {
+      Canalert canalert
+    =Canalert();
+    
     try {
       // Check if beneficiary data is available
       if (beneficiaryLocalService.box.hasData("beneficiary")) {
@@ -86,6 +93,9 @@ class ScreenTimerServices {
         // Retrieve beneficiary data from local storage
         BenefiiciaryModel benefiiciaryModel =
             beneficiaryLocalService.retrieveFromGetStorage();
+            benefiiciaryModel=await beneficiaryDatabaseService
+          .getBenDetails(benefiiciaryModel.memberUid);
+          beneficiaryLocalService.saveToGetStorage(benefiiciaryModel.toJson(true, false));
         // Start noise service for detecting beneficiary activity
         NoiseService noiseService = NoiseService();
         await noiseService.start(benefiiciaryModel, para);
@@ -93,8 +103,8 @@ class ScreenTimerServices {
         _screen.screenStateStream!.listen((event) {
           onData(event, benefiiciaryModel, para);
         });
-        // Set iscanalert to true, indicating that alerts can be sent
-        iscanalert = true;
+        // Set iscanalert to true, indicating that alerts can't be sent
+        canalert.updateAlert(true);
       } else {
         // Debug print if beneficiary data is not available
         debugPrint(
