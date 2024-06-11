@@ -21,6 +21,11 @@ class BeneficiaryDatabaseService {
     }
   }
 
+  Stream<DocumentSnapshot<Object?>> checkUIDExists(String uid)  {
+    final snapShot = beneficiaryCollection.doc(uid).snapshots();
+   return snapShot;
+  }
+
   /// Update beneficiary details in the database.
   void beneficiaryDetailsUpdate(String uid, Map<String, dynamic> data) async {
     try {
@@ -102,6 +107,56 @@ class BeneficiaryDatabaseService {
       await inactivityDetails.doc(uid).update(data);
     } catch (e) {
       debugPrint(e.toString());
+    }
+  }
+
+  Future<void> deleteDocument(String docId) async {
+    try {
+     
+      deleteInactivitycollection(docId);
+      deletemedicationcollection(docId);
+      await beneficiaryCollection.doc(docId).delete();
+
+      debugPrint('Document successfully deleted!');
+    } catch (e) {
+      debugPrint('Error deleting document: $e');
+    }
+  }
+
+  Future<void> deleteInactivitycollection(String docId) async {
+    CollectionReference subcollectionRef =
+        beneficiaryCollection.doc(docId).collection("inactivityDetails");
+
+    try {
+      // Get all documents in the subcollection
+      QuerySnapshot subcollectionSnapshot = await subcollectionRef.get();
+
+      // Delete each document in the subcollection
+      for (QueryDocumentSnapshot doc in subcollectionSnapshot.docs) {
+        await doc.reference.delete();
+      }
+
+      print('Subcollection successfully deleted!');
+    } catch (e) {
+      print('Error deleting subcollection: $e');
+    }
+  }
+
+  Future<void> deletemedicationcollection(String docId) async {
+    CollectionReference subcollectionRef =
+        beneficiaryCollection.doc(docId).collection("medication");
+
+    try {
+      // Get all documents in the subcollection
+      QuerySnapshot subcollectionSnapshot = await subcollectionRef.get();
+
+      // Delete each document in the subcollection
+      for (QueryDocumentSnapshot doc in subcollectionSnapshot.docs) {
+        await doc.reference.delete();
+      }
+      print('Subcollection successfully deleted!');
+    } catch (e) {
+      print('Error deleting subcollection: $e');
     }
   }
 }

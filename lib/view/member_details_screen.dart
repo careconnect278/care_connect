@@ -90,16 +90,16 @@ class MemberDetailsScreen extends StatelessWidget {
                         CustomTextField(
                           label: "Name",
                           textEditingController:
-                              textFieldController.caretakerNameController,validator: (value) {
-                                RegExp regex = RegExp(r'^[a-zA-Z]+$');
-  if (value!.isEmpty) {
-    return "Please enter a valid name";
-  } else if (!regex.hasMatch(value)) {
-    return "Name can only contain letters";
-  }
-  return null;
-
-                              },
+                              textFieldController.caretakerNameController,
+                          validator: (value) {
+                            RegExp regex = RegExp(r'^[a-zA-Z]+$');
+                            if (value!.isEmpty) {
+                              return "Please enter a valid name";
+                            } else if (!regex.hasMatch(value)) {
+                              return "Name can only contain letters";
+                            }
+                            return null;
+                          },
                         ),
                         SizedBox(
                           height: 2.h,
@@ -111,7 +111,7 @@ class MemberDetailsScreen extends StatelessWidget {
                           ],
                           label: "Phone Number",
                           validator: (value) {
-                            if (value!.length < 10) {
+                            if (value!.length < 10 || value.length > 10) {
                               return "Phone number mustbe 10 numbers";
                             }
                             return null;
@@ -158,66 +158,64 @@ class MemberDetailsScreen extends StatelessWidget {
                       CustomTextField(
                         label: "Name",
                         textEditingController:
-                            textFieldController.beneficiaryNameController,validator: (value) {
-                              RegExp regex = RegExp(r'^[a-zA-Z]+$');
-  if (value!.isEmpty) {
-    return "Please enter a valid name";
-  } else if (!regex.hasMatch(value)) {
-    return "Name can only contain letters";
-  }
-  return null;
-
-                            },
+                            textFieldController.beneficiaryNameController,
+                        validator: (value) {
+                          RegExp regex = RegExp(r'^[a-zA-Z]+$');
+                          if (value!.isEmpty) {
+                            return "Please enter a valid name";
+                          } else if (!regex.hasMatch(value)) {
+                            return "Name can only contain letters";
+                          }
+                          return null;
+                        },
                       ),
                       SizedBox(
                         height: 2.h,
                       ),
                       CustomTextField(
-                        label: "Age", 
-                        
+                        label: "Age",
                         keyboardType: TextInputType.number,
-                         inputFormatters: [
-                                            FilteringTextInputFormatter
-                                                .digitsOnly
-                                          ], validator: (value) {
-                    if (value!.isEmpty) {
-                      return "Please enter a value";
-                    }
-                    int? age = int.tryParse(value);
-                    if (age != null) {
-                      if (age <= 0 || age > 120) {
-                        return "Please enter a valid age between 0 and 120";
-                      }
-                      return null;
-                    }
-                    return "Please enter a valid age";
-                  },
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return "Please enter a value";
+                          }
+                          int? age = int.tryParse(value);
+                          if (age != null) {
+                            if (age <= 0 || age > 120) {
+                              return "Please enter a valid age between 0 and 120";
+                            }
+                            return null;
+                          }
+                          return "Please enter a valid age";
+                        },
                         textEditingController:
                             textFieldController.beneficiaryageController,
                       ),
                       SizedBox(
                         height: 2.h,
-                      ), 
-                       CustomTextField(
-                        label: "noise Count", 
-                        
+                      ),
+                      CustomTextField(
+                        label: "noise Count",
                         keyboardType: TextInputType.number,
-                         inputFormatters: [
-                                            FilteringTextInputFormatter
-                                                .digitsOnly
-                                          ], validator: (value) {
-                    if (value!.isEmpty) {
-                      return "Please enter a count";
-                    }
-                    int? age = int.tryParse(value);
-                    if (age != null) {
-                      if (age < 70 || age > 120) {
-                        return "Please enter a valid count between 70 and 120";
-                      }
-                      return null;
-                    }
-                    return "Please enter a valid count";
-                  },
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return "Please enter a count";
+                          }
+                          int? age = int.tryParse(value);
+                          if (age != null) {
+                            if (age < 70 || age > 120) {
+                              return "Please enter a valid count between 70 and 120";
+                            }
+                            return null;
+                          }
+                          return "Please enter a valid count";
+                        },
                         textEditingController:
                             textFieldController.noiseDecibelController,
                       ),
@@ -257,6 +255,60 @@ class MemberDetailsScreen extends StatelessWidget {
                       SizedBox(
                         height: 2.h,
                       ),
+                      Text(
+                        'Sleep time',
+                        style: TextStyle(
+                            fontSize: 20.dp, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(
+                        height: 2.h,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          SizedBox(
+                            width: 40.w,
+                            child: CustomTextField(
+                                isList: true,
+                                onTap: () async {
+                                  TimeOfDay? selectedTime =
+                                      await showTimePicker(
+                                    initialTime: TimeOfDay.now(),
+                                    context: context,
+                                  );
+                                  if (!context.mounted) return;
+                                  textFieldController.fromSleeptimeController
+                                      .text = selectedTime!.format(context);
+                                },
+                                readOnly: true,
+                                label: "From",
+                                textEditingController: textFieldController
+                                    .fromSleeptimeController),
+                          ),
+                          SizedBox(
+                            width: 40.w,
+                            child: CustomTextField(
+                                isList: true,
+                                onTap: () async {
+                                  TimeOfDay? selectedTime =
+                                      await showTimePicker(
+                                    initialTime: TimeOfDay.now(),
+                                    context: context,
+                                  );
+                                  if (!context.mounted) return;
+                                  textFieldController.toSleepTimeController
+                                      .text = selectedTime!.format(context);
+                                },
+                                readOnly: true,
+                                label: "To",
+                                textEditingController:
+                                    textFieldController.toSleepTimeController),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 2.h,
+                      ),
                       Obx(
                         () => ListView.separated(
                             shrinkWrap: true,
@@ -276,10 +328,13 @@ class MemberDetailsScreen extends StatelessWidget {
                                           keyboardType: TextInputType.phone,
                                           isList: true,
                                           validator: (value) {
-                                            if (value!.isNotEmpty &&
-                                                value.length < 10) {
-                                              return "Phone number mustbe 10 numbers";
+                                            if (value!.isNotEmpty) {
+                                              if (value.length < 10 ||
+                                                  value.length > 10) {
+                                                return "Phone number mustbe 10 numbers";
+                                              }
                                             }
+
                                             return null;
                                           },
                                           inputFormatters: [
@@ -318,9 +373,11 @@ class MemberDetailsScreen extends StatelessWidget {
                                     isList: true,
                                     label: "Emergency number ${index + 1}",
                                     validator: (value) {
-                                      if (value!.isNotEmpty &&
-                                          value.length < 10) {
-                                        return "Phone number mustbe 10 numbers";
+                                      if (value!.isNotEmpty) {
+                                        if (value.length < 10 ||
+                                            value.length > 10) {
+                                          return "Phone number mustbe 10 numbers";
+                                        }
                                       }
                                       return null;
                                     },
@@ -563,6 +620,7 @@ class MemberDetailsScreen extends StatelessWidget {
                                       managementOnCareTaker);
                                 } else {
                                   if (index != null) {
+                                    
                                     await FormSubmission.edit(
                                         textFieldController,
                                         managementOnCareTaker,
@@ -654,7 +712,8 @@ class CustomTextField extends StatelessWidget {
         ),
         Padding(
           padding: EdgeInsets.only(top: 2.h),
-          child: TextFormField(autovalidateMode: AutovalidateMode.onUserInteraction,
+          child: TextFormField(
+            autovalidateMode: AutovalidateMode.onUserInteraction,
             inputFormatters: inputFormatters,
             onTap: onTap,
             keyboardType: keyboardType,

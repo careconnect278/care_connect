@@ -17,6 +17,8 @@ class BenefiiciaryModel {
   List<MedicationPillModel> medications;
   String? random;
   String? noiseDecibel;
+  String toSleep;
+  String fromSleep;
 
   BenefiiciaryModel(
       {required this.name,
@@ -25,11 +27,14 @@ class BenefiiciaryModel {
       required this.careUid,
       required this.memberUid,
       required this.timeToAlert,
-      required this.alergies,required this.noiseDecibel,
+      required this.alergies,
+      required this.noiseDecibel,
       required this.benToken,
       required this.careToken,
       required this.emergencynumbers,
       required this.medications,
+      required this.fromSleep,
+      required this.toSleep,
       this.random});
 
   factory BenefiiciaryModel.fromJson(
@@ -38,7 +43,19 @@ class BenefiiciaryModel {
     List<dynamic> emergency = json["emergency"];
     debugPrint(json.toString());
     return BenefiiciaryModel(
-      noiseDecibel: json["noiseDecibel"]==null?"85":json["noiseDecibel"].toString(),
+        toSleep: json["toSleep"] == null
+            ? "06:30 AM"
+            : json["toSleep"].toString().isEmpty
+                ? "06:30 AM"
+                : json["toSleep"],
+        fromSleep: json["fromSleep"] == null
+            ? "11:30 PM"
+            : json["fromSleep"].toString().isEmpty
+                ? "11:30 PM"
+                : json["fromSleep"],
+        noiseDecibel: json["noiseDecibel"] == null
+            ? "85"
+            : json["noiseDecibel"].toString(),
         random: json["random"].toString(),
         medications: medications,
         name: json['name'].toString(),
@@ -55,7 +72,11 @@ class BenefiiciaryModel {
 
   Map<String, dynamic> toJson(bool isLocal, bool isAuth) {
     var a = {
-      "noiseDecibel":noiseDecibel==null?"100":noiseDecibel!.isEmpty?"100":noiseDecibel,
+      "noiseDecibel": noiseDecibel == null
+          ? "100"
+          : noiseDecibel!.isEmpty
+              ? "100"
+              : noiseDecibel,
       'name': name,
       'age': age,
       'email': email,
@@ -66,6 +87,8 @@ class BenefiiciaryModel {
       "emergency": emergencynumbers,
       "careToken": careToken,
       "benToken": benToken,
+      "toSleep": toSleep,
+      "fromSleep": fromSleep
     };
     if (isAuth) {
       a.addAll({"random": randomCode()});

@@ -14,6 +14,7 @@ import '../../model/medication_model.dart';
 import '../../view/add_member_screen.dart';
 import 'authentication_service.dart';
 import 'notification_service.dart';
+
 /// A class representing operations related to form submissions.
 class FormSubmission {
   // Initializing necessary services
@@ -31,8 +32,8 @@ class FormSubmission {
   /// - [textFieldController]: Controller containing form data.
   /// - [managementOnCareTaker]: Object managing caretaker information.
   static Future<void> register(
-    TextFieldController  textFieldController,
-    MemberManagementOnCareTaker  managementOnCareTaker,
+    TextFieldController textFieldController,
+    MemberManagementOnCareTaker managementOnCareTaker,
   ) async {
     // Getting loader instance
     LoaderController loader = Get.find();
@@ -43,6 +44,8 @@ class FormSubmission {
 
     // Creating beneficiary model
     BenefiiciaryModel beneficiaryModel = BenefiiciaryModel(
+      toSleep: textFieldController.toSleepTimeController.text,
+      fromSleep: textFieldController.fromSleeptimeController.text,
       noiseDecibel: textFieldController.noiseDecibelController.text,
       benToken: "",
       careToken: token,
@@ -74,7 +77,8 @@ class FormSubmission {
     );
 
     // Registering user
-    LoginReturnModel loginReturnModel = await authenticationServices.registeruser(
+    LoginReturnModel loginReturnModel =
+        await authenticationServices.registeruser(
       beneficiaryModel.email,
       textFieldController.beneficiaryPasswordController.text,
       false,
@@ -93,13 +97,15 @@ class FormSubmission {
     );
 
     // Registering caretaker
-    authenticationServices.registeruser(
+    authenticationServices
+        .registeruser(
       careTakerModel.email,
       textFieldController.caretakerPasswordController.text,
       true,
       careTakerModel,
       null,
-    ).then((value) {
+    )
+        .then((value) {
       if (value.responseValue) {
         // Stopping loader and showing success message
         loader.stop();
@@ -134,7 +140,10 @@ class FormSubmission {
     String token = await notificationServices.getToken();
 
     // Creating beneficiary model
-    BenefiiciaryModel beneficiaryModel = BenefiiciaryModel(noiseDecibel: textFieldController.noiseDecibelController.text,
+    BenefiiciaryModel beneficiaryModel = BenefiiciaryModel(
+      toSleep: textFieldController.toSleepTimeController.text,
+      fromSleep: textFieldController.fromSleeptimeController.text,
+      noiseDecibel: textFieldController.noiseDecibelController.text,
       benToken: "",
       careToken: token,
       name: textFieldController.beneficiaryNameController.text,
@@ -165,13 +174,15 @@ class FormSubmission {
     );
 
     // Registering user
-    await authenticationServices.registeruser(
+    await authenticationServices
+        .registeruser(
       beneficiaryModel.email,
       textFieldController.beneficiaryPasswordController.text,
       false,
       null,
       beneficiaryModel,
-    ).then((value) {
+    )
+        .then((value) {
       CareTakerModel careTakerModel = managementOnCareTaker.caretaker.value!;
       careTakerModel.memberUid.add(value.uid);
 
@@ -188,7 +199,7 @@ class FormSubmission {
       );
 
       // Stopping loader and showing success message
-      managementOnCareTaker.getAndNavigate();
+      // managementOnCareTaker.getAndNavigate();
       loader.stop();
       Get.showSnackbar(const GetSnackBar(
         backgroundColor: Colors.green,
@@ -218,9 +229,13 @@ class FormSubmission {
 
     // Obtaining notification token
     String token = await notificationServices.getToken();
-
+    
     // Creating beneficiary model
-    BenefiiciaryModel beneficiaryModel = BenefiiciaryModel(noiseDecibel: textFieldController.noiseDecibelController.text,
+    BenefiiciaryModel beneficiaryModel = BenefiiciaryModel(
+      random: managementOnCareTaker.members[index].random,
+      toSleep: textFieldController.toSleepTimeController.text,
+      fromSleep: textFieldController.fromSleeptimeController.text,
+      noiseDecibel: textFieldController.noiseDecibelController.text,
       benToken: managementOnCareTaker.members[index].benToken,
       careToken: token,
       name: textFieldController.beneficiaryNameController.text,
@@ -249,7 +264,7 @@ class FormSubmission {
           .map((e) => e.text)
           .toList(),
     );
-
+    print(beneficiaryModel.toJson(true, false));
     // Adding beneficiary details
     beneficiaryDatabaseService.beneficiaryDetailsAdd(beneficiaryModel);
     beneficiaryDatabaseService.medicalUpdate(
@@ -260,11 +275,7 @@ class FormSubmission {
     // Adding inactivity details
     await beneficiaryDatabaseService.addInactivityDetails(
       beneficiaryModel.memberUid,
-      {
-        "lastunlockedtime": "",
-        "lastlockedtime": "",
-        "lastInactivityhours": ""
-      },
+      {"lastunlockedtime": "", "lastlockedtime": "", "lastInactivityhours": ""},
     ).whenComplete(() {
       // Stopping loader and showing success message
       managementOnCareTaker.getAndNavigate();

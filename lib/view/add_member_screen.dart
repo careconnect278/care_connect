@@ -18,7 +18,9 @@ class AddMemberScreen extends StatelessWidget {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        appBar: const CustomAppbar(isAppBar: true,),
+        appBar: const CustomAppbar(
+          isAppBar: true,
+        ),
         body: Padding(
           padding: EdgeInsets.symmetric(horizontal: 8.w),
           child: Column(
@@ -98,6 +100,16 @@ class AddMemberScreen extends StatelessWidget {
                               },
                               child: Icon(
                                 Icons.edit,
+                                size: 7.w,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                managementOnCareTaker.deleteBen(index);
+                                // print(managementOnCareTaker.caretaker.value);
+                              },
+                              child: Icon(
+                                Icons.delete,
                                 size: 7.w,
                               ),
                             )

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 
 class Canalert {
@@ -8,7 +7,7 @@ class Canalert {
   // Retrieve from GetStorage
   bool retrieveFromGetStorage() {
     final a = box.read('canAlert') ?? false;
-    debugPrint("canAlert$a");
+    // debugPrint("canAlert$a");
     
     // If medications is a list, cast it to List<Map<String, dynamic>>
     return a;

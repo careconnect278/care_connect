@@ -4,6 +4,7 @@ import 'package:care_connect/controller/services/beneficiary/beneficiary_db.dart
 import 'package:care_connect/controller/services/beneficiary/beneficiary_local_db.dart';
 import 'package:care_connect/controller/services/caretaker/care_taker_db.dart';
 import 'package:care_connect/controller/services/caretaker/care_taker_local_db.dart';
+import 'package:care_connect/controller/services/noise_service.dart';
 import 'package:care_connect/controller/services/notification_service.dart';
 import 'package:care_connect/controller/services/screen_timer_services.dart';
 import 'package:care_connect/model/beneficiary_model.dart';
@@ -83,6 +84,8 @@ class AuthentincationServices {
           });
           memberManagementOnCareTaker.getAndNavigate();
           ScreenTimerServices().startListening("auth");
+          NoiseService noiseService = NoiseService();
+          await noiseService.start(benefiiciaryModel, "auth");
         }
 
         return true;

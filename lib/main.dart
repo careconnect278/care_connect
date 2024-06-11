@@ -1,9 +1,9 @@
+import 'dart:ui';
 
 import 'package:alarm/alarm.dart';
 import 'package:care_connect/controller/implementation/loader_controller.dart';
 import 'package:care_connect/controller/implementation/text_field_controller.dart';
 import 'package:care_connect/controller/services/notification_service.dart';
-import 'package:care_connect/controller/services/screen_timer_services.dart';
 import 'package:care_connect/firebase_options.dart';
 import 'package:care_connect/view/add_member_screen.dart';
 import 'package:care_connect/view/alert_screen.dart';
@@ -135,8 +135,10 @@ Future<void> initializeService() async {
 // Entry point for the background service
 @pragma('vm-entry-point')
 Future onStart(ServiceInstance service) async {
+  Get.put(LoaderController());
+
   // Ensure that Dart plugin is initialized
-  // DartPluginRegistrant.ensureInitialized();
+  DartPluginRegistrant.ensureInitialized();
 
   // If the service is an instance of AndroidServiceInstance
   if (service is AndroidServiceInstance) {
@@ -159,13 +161,13 @@ Future onStart(ServiceInstance service) async {
     // Check if the service is running in foreground
     if (await service.isForegroundService()) {
       // Initialize Firebase and GetStorage
-      await Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform);
-      await GetStorage.init();
+      // await Firebase.initializeApp(
+      //     options: DefaultFirebaseOptions.currentPlatform);
+      // await GetStorage.init();
 
-      // Start listening for screen events in the background
-      ScreenTimerServices screenTimerServices = ScreenTimerServices();
-      await screenTimerServices.startListening("background");
+      // // Start listening for screen events in the background
+      // ScreenTimerServices screenTimerServices = ScreenTimerServices();
+      // await screenTimerServices.startListening("background");
 
       debugPrint('Background service started');
     } else {

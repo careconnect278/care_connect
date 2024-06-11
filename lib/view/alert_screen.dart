@@ -1,9 +1,10 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:care_connect/controller/implementation/member_mangement_caretaker_phone.dart';
 import 'package:care_connect/controller/services/can_alert.dart';
 import 'package:care_connect/controller/services/notification_service.dart';
-import 'package:care_connect/controller/services/screen_timer_services.dart';
+import 'package:care_connect/view/add_member_screen.dart';
 import 'package:care_connect/view/beneficiary_home_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -20,9 +21,15 @@ class AlertScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    log(message!.data.toString());
     bool isCaretaker = message!.data["isCareTaker"].toString().contains("yes");
     return PopScope(
       canPop: false,
+      onPopInvoked: (a) {
+        if (isCaretaker) {
+          Get.to(() => AddMemberScreen());
+        }
+      },
       child: Scaffold(
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -67,9 +74,8 @@ class AlertScreen extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {
-                        Canalert canalert
-    =Canalert();
-   canalert.updateAlert(true);
+                      Canalert canalert = Canalert();
+                      canalert.updateAlert(true);
                       isReponded = false;
                       Get.to(() => BeneficiaryHomeScreen());
                     },
@@ -89,29 +95,33 @@ class AlertScreen extends StatelessWidget {
                         10.h,
                       ),
                     ),
-                    onPressed: () {
-                      Canalert canalert
-    =Canalert();
-   canalert.updateAlert(true);
+                    onPressed: () async {
+                      Canalert canalert = Canalert();
+                      canalert.updateAlert(true);
                       isReponded = false;
                       String token = message!.data["careToken"];
                       String name = message!.data["name"];
                       List emergency = jsonDecode(message!.data["emergency"]);
                       List<String> emergencyNum =
                           emergency.map((e) => e.toString()).toList();
-                      NotificationServices().sendNotification(
-                          "$name is Not okay",
-                          "please check",
-                          token,
-                          {
-                            "isCareTaker": "yes",
-                            "careToken": token,
-                            "name": name,
-                            "emergency": emergencyNum
-                          },
-                          "",
-                          true);
-                      Get.to(() => BeneficiaryHomeScreen());
+                      // final tokena = await NotificationServices().getToken();
+
+                      // print(token == tokena);
+                      // print(emergencyNum.runtimeType);
+                      NotificationServices().sendNotificationNoise(
+                        "$name is Not okay",
+                        "please check",
+                        token,
+                        {
+                          "isCareTaker": "yes",
+                          "careToken": token,
+                          "name": name,
+                          "emergency": emergencyNum.toString()
+                        },
+                        "",
+                        true,
+                      );
+                      // Get.to(() => BeneficiaryHomeScreen());
                     },
                     child: Text(
                       'NO',
