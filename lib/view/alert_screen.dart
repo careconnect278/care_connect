@@ -1,11 +1,16 @@
+
 import 'dart:convert';
 import 'dart:developer';
 
 import 'package:care_connect/controller/implementation/member_mangement_caretaker_phone.dart';
 import 'package:care_connect/controller/services/can_alert.dart';
+import 'package:care_connect/controller/services/fall_alert.dart';
+import 'package:care_connect/controller/services/noise_alert.dart';
 import 'package:care_connect/controller/services/notification_service.dart';
+import 'package:care_connect/controller/services/show_aleergies.dart';
 import 'package:care_connect/view/add_member_screen.dart';
 import 'package:care_connect/view/beneficiary_home_screen.dart';
+import 'package:care_connect/view/medical_screen.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_sizer/flutter_sizer.dart';
@@ -21,7 +26,7 @@ class AlertScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    log(message!.data.toString());
+    // log(message!.data.toString());
     bool isCaretaker = message!.data["isCareTaker"].toString().contains("yes");
     return PopScope(
       canPop: false,
@@ -74,8 +79,24 @@ class AlertScreen extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {
-                      Canalert canalert = Canalert();
-                      canalert.updateAlert(true);
+                      if (message!.notification!.body!
+                          .toLowerCase()
+                          .contains("noise")) {
+                        log("noise");
+
+                        NoiseAlert noiseAlert = NoiseAlert();
+                        noiseAlert.updateAlert(true);
+                      } else if (message!.notification!.body!
+                          .toLowerCase()
+                          .contains("fall")) {
+                        FallAlert fallAlert = FallAlert();
+                        fallAlert.updateAlert(true);
+                      } else {
+                        log(DateTime.now().toString());
+                        Canalert canalert = Canalert();
+                        canalert.updateAlert(true);
+                       
+                      }
                       isReponded = false;
                       Get.to(() => BeneficiaryHomeScreen());
                     },
@@ -96,9 +117,22 @@ class AlertScreen extends StatelessWidget {
                       ),
                     ),
                     onPressed: () async {
-                      Canalert canalert = Canalert();
-                      canalert.updateAlert(true);
-                      isReponded = false;
+                      if (message!.notification!.body!
+                          .toLowerCase()
+                          .contains("noise")) {
+                        log("noise");
+
+                        NoiseAlert noiseAlert = NoiseAlert();
+                        noiseAlert.updateAlert(true);
+                      } else if (message!.notification!.body!
+                          .toLowerCase()
+                          .contains("fall")) {
+                        FallAlert fallAlert = FallAlert();
+                        fallAlert.updateAlert(true);
+                      } else {
+                        Canalert canalert = Canalert();
+                        canalert.updateAlert(true);
+                      }
                       String token = message!.data["careToken"];
                       String name = message!.data["name"];
                       List emergency = jsonDecode(message!.data["emergency"]);
@@ -121,7 +155,9 @@ class AlertScreen extends StatelessWidget {
                         "",
                         true,
                       );
-                      // Get.to(() => BeneficiaryHomeScreen());
+                      ShowAllergies showAllergies = ShowAllergies();
+                      showAllergies.updateInGetStorage(true);
+                      Get.to(() => MedicalScreen());
                     },
                     child: Text(
                       'NO',

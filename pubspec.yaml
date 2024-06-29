@@ -53,9 +53,14 @@ dependencies:
     git:
       url: https://github.com/fluttercommunity/flutter_sms.git
       ref: master
+  screen_detect_plugin:
+    git:
+      url: https://github.com/careconnect278/screen_detect_plugin.git
   permission_handler: ^11.3.1
   alarm: ^3.1.3
-  screen_state: ^3.0.1
+  # screen_state: ^3.0.1
+  sensors_plus: ^5.0.1
+  shared_preferences: ^2.2.3
 
 dev_dependencies:
   flutter_test:

@@ -4,7 +4,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:care_connect/controller/implementation/loader_controller.dart';
-import 'package:care_connect/controller/services/can_alert.dart';
+import 'package:care_connect/controller/services/noise_alert.dart';
 import 'package:care_connect/controller/services/notification_service.dart';
 import 'package:care_connect/model/beneficiary_model.dart';
 import 'package:flutter/material.dart';
@@ -25,10 +25,8 @@ class NoiseService {
   /// Sends notifications if noise levels exceed certain thresholds.
   void onData(NoiseReading noiseReading, BenefiiciaryModel benefiiciaryModel,
       String para) {
-    Canalert canalert = Canalert();
-
     int noiseCount = int.parse(benefiiciaryModel.noiseDecibel ?? "100");
-    bool iscanalert = canalert.retrieveFromGetStorage();
+
     // Check if noise levels exceed thresholds.
     // log("${noiseReading.meanDecibel}");
     if (noiseReading.maxDecibel > noiseCount &&
@@ -43,6 +41,8 @@ class NoiseService {
       // // Send notification to beneficiary.
       if (loaderController.notificationSender.value == false) {
         loaderController.updateNotificationSender(true);
+        NoiseAlert noiseAlert = NoiseAlert();
+        noiseAlert.updateAlert(false);
         Future.delayed(
           const Duration(minutes: 2),
           () {
@@ -62,15 +62,15 @@ class NoiseService {
           para,
           false,
         );
-        debugPrint("leodas$iscanalert");
+
         // Start timer for secondary notification.
 
         timer = Timer.periodic(const Duration(seconds: 1), (tier) async {
           if ((tier.tick == 60)) {
-            bool isanalert = canalert.retrieveFromGetStorage();
+            bool isanalert = noiseAlert.retrieveFromGetStorage();
             loaderController.aadsNoiseLogs("$isanalert");
             print("object is true");
-            debugPrint("leodas$isanalert");
+            log("leodas$isanalert");
             if (isanalert == false) {
               loaderController.aadsNoiseLogs("CareTaker is going");
               print("sended");

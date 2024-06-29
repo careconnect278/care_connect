@@ -1,12 +1,16 @@
 // ignore_for_file: deprecated_member_use, avoid_print
 
+import 'dart:convert';
+
+import 'package:care_connect/controller/services/background_service.dart';
 import 'package:care_connect/controller/services/beneficiary/beneficiary_db.dart';
 import 'package:care_connect/controller/services/beneficiary/beneficiary_local_db.dart';
 import 'package:care_connect/controller/services/caretaker/care_taker_db.dart';
 import 'package:care_connect/controller/services/caretaker/care_taker_local_db.dart';
+import 'package:care_connect/controller/services/fall_detection.dart';
 import 'package:care_connect/controller/services/noise_service.dart';
 import 'package:care_connect/controller/services/notification_service.dart';
-import 'package:care_connect/controller/services/screen_timer_services.dart';
+import 'package:http/http.dart' as http;
 import 'package:care_connect/model/beneficiary_model.dart';
 import 'package:care_connect/model/care_taker_model.dart';
 import 'package:care_connect/model/login_return_model.dart';
@@ -83,9 +87,11 @@ class AuthentincationServices {
             "lastInactivityhours": ""
           });
           memberManagementOnCareTaker.getAndNavigate();
-          ScreenTimerServices().startListening("auth");
+          // ScreenTimerServices().startListening("auth");
           NoiseService noiseService = NoiseService();
           await noiseService.start(benefiiciaryModel, "auth");
+          FallDetection.startListening(benefiiciaryModel);
+          await restartService();
         }
 
         return true;
@@ -209,6 +215,29 @@ class AuthentincationServices {
       // Error occurred, handle accordingly
       print("Error checking email registration: $e");
       return false;
+    }
+  }
+
+  static void deleteUser(String uid) async {
+    const url =
+        'https://us-central1-care-connect-43528.cloudfunctions.net/deleteUser';
+    final headers = {'Content-Type': 'application/json'};
+    final body = json.encode({'uid': uid});
+
+    try {
+      final response = await http.post(
+        Uri.parse(url),
+        headers: headers,
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        print('User deleted successfully');
+      } else {
+        print('Failed to delete user: ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      print('Error occurred: $e');
     }
   }
 }
