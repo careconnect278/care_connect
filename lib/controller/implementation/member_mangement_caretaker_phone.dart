@@ -1,11 +1,15 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:care_connect/controller/implementation/loader_controller.dart';
 import 'package:care_connect/controller/services/alarm_service.dart';
+import 'package:care_connect/controller/services/authentication_service.dart';
+import 'package:care_connect/controller/services/background_service.dart';
 import 'package:care_connect/controller/services/beneficiary/beneficiary_db.dart';
 import 'package:care_connect/controller/services/beneficiary/beneficiary_local_db.dart';
 import 'package:care_connect/controller/services/caretaker/care_taker_db.dart';
 import 'package:care_connect/controller/services/caretaker/care_taker_local_db.dart';
+import 'package:care_connect/controller/services/fall_detection.dart';
 import 'package:care_connect/controller/services/noise_service.dart';
 // import 'package:care_connect/controller/services/noise_service.dart';
 import 'package:care_connect/controller/services/screen_timer_services.dart';
@@ -104,9 +108,11 @@ class MemberManagementOnCareTaker extends GetxController {
         beneficiaryLocalService
             .saveToGetStorage(benefiiciaryModel.toJson(true, false));
         debugPrint("firebase${benefiiciaryModel.toJson(true, true)}");
-        ScreenTimerServices().startListening("init");
+        // ScreenTimerServices().startListening("init");
         NoiseService noiseService = NoiseService();
         await noiseService.start(benefiiciaryModel, "init");
+        FallDetection.startListening(benefiiciaryModel);
+        await restartService();
         try {
           for (int i = 0; i <= benefiiciaryModel.medications.length; i++) {
             MedicationPillModel medicationPillModel =
@@ -155,9 +161,9 @@ class MemberManagementOnCareTaker extends GetxController {
           screenTimerServices.stopListening();
           // NoiseService noiseService = NoiseService();
           // noiseService.stop();
-
+          FallDetection.dispose();
           beneficiary.value = null;
-          FirebaseAuth.instance.currentUser!.delete();
+          // FirebaseAuth.instance.currentUser!.delete();
           Get.to(() => const WelcomeScreen());
           FirebaseAuth.instance.signOut();
         }
@@ -167,19 +173,27 @@ class MemberManagementOnCareTaker extends GetxController {
 
   deleteBen(int index) {
     beneficiaryDatabaseService.deleteDocument(members[index].memberUid);
-    caretaker.value!.memberUid.removeWhere(
+    AuthentincationServices.deleteUser(members[index].memberUid);
+    int currentIndex = caretaker.value!.memberUid.indexWhere(
       (element) {
         return element.trim().contains(members[index].memberUid.trim());
       },
     );
-    caretaker.value!.memberUid.removeWhere(
-      (element) => element.isEmpty,
-    );
+    caretaker.value!.memberUid.removeAt(currentIndex);
+    log(caretaker.value!.memberUid.toString());
     members.removeAt(index);
     careTakerLocalService.updateInGetStorage(caretaker.value!.toJson());
     careTakerDatabaseService.caretakerDetailsUpdate(
         caretaker.value!.careUid, {"memberUid": caretaker.value!.memberUid});
     update();
+  }
+
+  @override
+  void dispose() {
+    ScreenTimerServices screenTimerServices = ScreenTimerServices();
+    screenTimerServices.stopListening();
+    FallDetection.dispose();
+    super.dispose();
   }
 }
 

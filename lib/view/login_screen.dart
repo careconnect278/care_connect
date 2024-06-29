@@ -18,10 +18,12 @@ class LoginScreen extends StatelessWidget {
   final TextEditingController passwordController = TextEditingController();
   final LoaderController loader = Get.find();
   final MemberManagementOnCareTaker managementOnCareTaker = Get.find();
-  final inputDecoration = InputDecoration(focusedErrorBorder: OutlineInputBorder(
+  final inputDecoration = InputDecoration(
+      focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
-      filled: true,errorBorder:OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none) ,
+      filled: true,
+      errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
       enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none),
       focusedBorder: OutlineInputBorder(
@@ -68,15 +70,16 @@ class LoginScreen extends StatelessWidget {
                               horizontal: 10.w, vertical: 2.h),
                           child: TextFormField(
                             decoration: inputDecoration,
-                                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
                             validator: (val) {
-                            if (val!.isEmpty) {
-                              return "Email Is Empty";
-                            } else if (!isEmailValid(val)) {
-                              return "Email format Incorrect";
-                            }
-                            return null;
-                          },
+                              if (val!.isEmpty) {
+                                return "Email Is Empty";
+                              } else if (!isEmailValid(val)) {
+                                return "Email format Incorrect";
+                              }
+                              return null;
+                            },
                             controller: emailController,
                           ),
                         ),
@@ -88,12 +91,15 @@ class LoginScreen extends StatelessWidget {
                         Padding(
                           padding: EdgeInsets.symmetric(
                               horizontal: 10.w, vertical: 2.h),
-                          child: TextFormField( autovalidateMode: AutovalidateMode.onUserInteraction, validator: (value) {
-                            if (value!.length < 6) {
-                              return "password mustbe greater than 6 character";
-                            }
-                            return null;
-                          },
+                          child: TextFormField(
+                            autovalidateMode:
+                                AutovalidateMode.onUserInteraction,
+                            validator: (value) {
+                              if (value!.length < 6) {
+                                return "password mustbe greater than 6 characters";
+                              }
+                              return null;
+                            },
                             decoration: inputDecoration,
                             controller: passwordController,
                           ),
@@ -103,10 +109,11 @@ class LoginScreen extends StatelessWidget {
                           children: [
                             GestureDetector(
                               onTap: () {
-                                if(formKey.currentState!.validate()){ AuthentincationServices()
-                                      .resetPassword(email: emailController.text);}
-                                 
-                                                            },
+                                // if (formKey.currentState!.validate()) {
+                                AuthentincationServices()
+                                    .resetPassword(email: emailController.text);
+                                // }
+                              },
                               child: Text(
                                 'Forgot Password?',
                                 style: TextStyle(
@@ -132,22 +139,24 @@ class LoginScreen extends StatelessWidget {
                                 20.w,
                               ),
                             ),
-                            onPressed: () async {if(formKey.currentState!.validate()){ loader.start();
-                              await AuthentincationServices()
-                                  .loginuser(emailController.text,
-                                      passwordController.text, isCaretaker)
-                                  .then((value) {
-                                if (value) {
-                                  managementOnCareTaker.getAndNavigate();
-                                  if (isCaretaker) {
-                                    Get.to(() => AddMemberScreen());
-                                  } else {
-                                    Get.to(() => BeneficiaryHomeScreen());
+                            onPressed: () async {
+                              if (formKey.currentState!.validate()) {
+                                loader.start();
+                                await AuthentincationServices()
+                                    .loginuser(emailController.text,
+                                        passwordController.text, isCaretaker)
+                                    .then((value) {
+                                  if (value) {
+                                    managementOnCareTaker.getAndNavigate();
+                                    if (isCaretaker) {
+                                      Get.to(() => AddMemberScreen());
+                                    } else {
+                                      Get.to(() => BeneficiaryHomeScreen());
+                                    }
+                                    loader.stop();
                                   }
-                                  loader.stop();
-                                }
-                              });}
-                             
+                                });
+                              }
                             },
                             child: const Icon(
                               Icons.login,
@@ -166,14 +175,15 @@ class LoginScreen extends StatelessWidget {
                                 ),
                               ),
                               onPressed: () async {
-  final TextFieldController textFieldController = Get.find();
-  textFieldController.clear();
+                                final TextFieldController textFieldController =
+                                    Get.find();
+                                textFieldController.clear();
                                 Get.to(() => MemberDetailsScreen(
                                     memberDetailsScreenState:
                                         MemberDetailsScreenState.register));
                               },
                               child: const Text(
-                                'Register\nif you havent account',
+                                'Register \n if you are new',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                     color: Colors.black,

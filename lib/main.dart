@@ -1,8 +1,7 @@
-import 'dart:ui';
-
 import 'package:alarm/alarm.dart';
 import 'package:care_connect/controller/implementation/loader_controller.dart';
 import 'package:care_connect/controller/implementation/text_field_controller.dart';
+import 'package:care_connect/controller/services/background_service.dart';
 import 'package:care_connect/controller/services/notification_service.dart';
 import 'package:care_connect/firebase_options.dart';
 import 'package:care_connect/view/add_member_screen.dart';
@@ -12,8 +11,6 @@ import 'package:care_connect/view/medical_screen.dart';
 import 'package:care_connect/view/welcome_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:flutter_sizer/flutter_sizer.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -110,68 +107,5 @@ class MyApp extends StatelessWidget {
         );
       },
     );
-  }
-}
-
-// Function to initialize the background service
-Future<void> initializeService() async {
-  final service = FlutterBackgroundService();
-
-  // Configure background service for Android
-  await service.configure(
-    iosConfiguration: IosConfiguration(),
-    androidConfiguration: AndroidConfiguration(
-      onStart: onStart,
-      isForegroundMode: true,
-      autoStart: true,
-      autoStartOnBoot: true,
-    ),
-  );
-
-  // Start the background service
-  service.startService();
-}
-
-// Entry point for the background service
-@pragma('vm-entry-point')
-Future onStart(ServiceInstance service) async {
-  Get.put(LoaderController());
-
-  // Ensure that Dart plugin is initialized
-  DartPluginRegistrant.ensureInitialized();
-
-  // If the service is an instance of AndroidServiceInstance
-  if (service is AndroidServiceInstance) {
-    // Listen for events to set the service as foreground or background
-    service.on('setAsForeground').listen((event) {
-      service.setAsForegroundService();
-    });
-    service.on('setAsBackground').listen((event) {
-      service.setAsBackgroundService();
-    });
-  }
-
-  // Listen for event to stop the service
-  service.on('stopService').listen((event) {
-    service.stopSelf();
-  });
-
-  // If the service is an instance of AndroidServiceInstance
-  if (service is AndroidServiceInstance) {
-    // Check if the service is running in foreground
-    if (await service.isForegroundService()) {
-      // Initialize Firebase and GetStorage
-      // await Firebase.initializeApp(
-      //     options: DefaultFirebaseOptions.currentPlatform);
-      // await GetStorage.init();
-
-      // // Start listening for screen events in the background
-      // ScreenTimerServices screenTimerServices = ScreenTimerServices();
-      // await screenTimerServices.startListening("background");
-
-      debugPrint('Background service started');
-    } else {
-      debugPrint('Background service not in foreground');
-    }
   }
 }

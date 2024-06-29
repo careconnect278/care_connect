@@ -1,8 +1,5 @@
 import 'package:care_connect/controller/implementation/member_mangement_caretaker_phone.dart';
-// import 'package:care_connect/controller/services/can_alert.dart';
 import 'package:care_connect/controller/services/show_aleergies.dart';
-// import 'package:care_connect/view/logs_list.dart';
- import 'package:care_connect/view/logs_list.dart';
 import 'package:care_connect/view/medical_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
@@ -90,7 +87,7 @@ class BeneficiaryHomeScreen extends StatelessWidget {
                                   GestureDetector(
                                       onTap: () {
                                         sendSS(
-                                            "message From ${managementOnCareTaker.beneficiary.value!.name}",
+                                            "Attention: ${managementOnCareTaker.beneficiary.value!.name} has requested assistence.Please check on them immediately",
                                             [
                                               managementOnCareTaker
                                                   .beneficiary
@@ -104,36 +101,36 @@ class BeneficiaryHomeScreen extends StatelessWidget {
                         },
                       )
                     },
-                    Row(
-                      children: [
-                        Expanded(
-                          child: InkWell(
-                            onTap: () {
-                              Get.to(() => LogsList(
-                                    isNoise: true,
-                                  ));
-                            },
-                            child: Icon(
-                              Icons.noise_aware,
-                              size: 20.w,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: InkWell(
-                            onTap: () {
-                              Get.to(() => LogsList(
-                                    isNoise: false,
-                                  ));
-                            },
-                            child: Icon(
-                              Icons.timer_3_select_sharp,
-                              size: 20.w,
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
+                    // Row(
+                    //   children: [
+                    //     Expanded(
+                    //       child: InkWell(
+                    //         onTap: () {
+                    //           Get.to(() => LogsList(
+                    //                 isNoise: true,
+                    //               ));
+                    //         },
+                    //         child: Icon(
+                    //           Icons.noise_aware,
+                    //           size: 20.w,
+                    //         ),
+                    //       ),
+                    //     ),
+                    //     Expanded(
+                    //       child: InkWell(
+                    //         onTap: () {
+                    //           Get.to(() => LogsList(
+                    //                 isNoise: false,
+                    //               ));
+                    //         },
+                    //         child: Icon(
+                    //           Icons.timer_3_select_sharp,
+                    //           size: 20.w,
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ],
+                    // )
                   ],
                 ),
               ),
