@@ -75,50 +75,59 @@ class FormSubmission {
           .map((e) => e.text)
           .toList(),
     );
+    try {
+      // Registering user
+      LoginReturnModel loginReturnModel =
+          await authenticationServices.registeruser(
+        beneficiaryModel.email,
+        textFieldController.beneficiaryPasswordController.text,
+        false,
+        null,
+        beneficiaryModel,
+      );
 
-    // Registering user
-    LoginReturnModel loginReturnModel =
-        await authenticationServices.registeruser(
-      beneficiaryModel.email,
-      textFieldController.beneficiaryPasswordController.text,
-      false,
-      null,
-      beneficiaryModel,
-    );
+      // Creating caretaker model
+      CareTakerModel careTakerModel = CareTakerModel(
+        name: textFieldController.caretakerNameController.text,
+        phoneNumber: textFieldController.caretakerPhoneNumberController.text,
+        email: textFieldController.caretakerEmailController.text,
+        careToken: token,
+        careUid: "",
+        memberUid: [loginReturnModel.uid],
+      );
 
-    // Creating caretaker model
-    CareTakerModel careTakerModel = CareTakerModel(
-      name: textFieldController.caretakerNameController.text,
-      phoneNumber: textFieldController.caretakerPhoneNumberController.text,
-      email: textFieldController.caretakerEmailController.text,
-      careToken: token,
-      careUid: "",
-      memberUid: [loginReturnModel.uid],
-    );
-
-    // Registering caretaker
-    authenticationServices
-        .registeruser(
-      careTakerModel.email,
-      textFieldController.caretakerPasswordController.text,
-      true,
-      careTakerModel,
-      null,
-    )
-        .then((value) {
-      if (value.responseValue) {
-        // Stopping loader and showing success message
-        loader.stop();
-        Get.showSnackbar(const GetSnackBar(
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
-          title: "Success",
-          message: "Successfully registered",
-        ));
-        managementOnCareTaker.getAndNavigate();
-        Get.to(() => AddMemberScreen());
-      }
-    });
+      // Registering caretaker
+      authenticationServices
+          .registeruser(
+        careTakerModel.email,
+        textFieldController.caretakerPasswordController.text,
+        true,
+        careTakerModel,
+        null,
+      )
+          .then((value) {
+        if (value.responseValue) {
+          // Stopping loader and showing success message
+          loader.stop();
+          Get.showSnackbar(const GetSnackBar(
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+            title: "Success",
+            message: "Successfully registered",
+          ));
+          managementOnCareTaker.getAndNavigate();
+          Get.to(() => AddMemberScreen());
+        }
+      });
+    } catch (e) {
+      loader.stop();
+      Get.showSnackbar(GetSnackBar(
+        backgroundColor: Colors.green,
+        duration: const Duration(seconds: 2),
+        title: "Failed",
+        message: "$e",
+      ));
+    }
   }
 
   /// Adds a new member to an existing caretaker.
@@ -140,6 +149,7 @@ class FormSubmission {
     String token = await notificationServices.getToken();
 
     // Creating beneficiary model
+
     BenefiiciaryModel beneficiaryModel = BenefiiciaryModel(
       toSleep: textFieldController.toSleepTimeController.text,
       fromSleep: textFieldController.fromSleeptimeController.text,
@@ -172,42 +182,54 @@ class FormSubmission {
           .map((e) => e.text)
           .toList(),
     );
+    try {
+      // Registering user
+      await authenticationServices
+          .registeruser(
+        beneficiaryModel.email,
+        textFieldController.beneficiaryPasswordController.text,
+        false,
+        null,
+        beneficiaryModel,
+      )
+          .then((value) {
+        if (value.responseValue) {
+          CareTakerModel careTakerModel =
+              managementOnCareTaker.caretaker.value!;
+          careTakerModel.memberUid.add(value.uid);
 
-    // Registering user
-    await authenticationServices
-        .registeruser(
-      beneficiaryModel.email,
-      textFieldController.beneficiaryPasswordController.text,
-      false,
-      null,
-      beneficiaryModel,
-    )
-        .then((value) {
-      CareTakerModel careTakerModel = managementOnCareTaker.caretaker.value!;
-      careTakerModel.memberUid.add(value.uid);
+          // Updating caretaker details locally
+          CareTakerLocalService careTakerLocalService = CareTakerLocalService();
+          careTakerLocalService.updateInGetStorage(careTakerModel.toJson());
 
-      // Updating caretaker details locally
-      CareTakerLocalService careTakerLocalService = CareTakerLocalService();
-      careTakerLocalService.updateInGetStorage(careTakerModel.toJson());
+          // Updating caretaker details in the database
+          CareTakerDatabaseService careTakerDatabaseService =
+              CareTakerDatabaseService();
+          careTakerDatabaseService.caretakerDetailsUpdate(
+            careTakerModel.careUid,
+            {"memberUid": careTakerModel.memberUid},
+          );
 
-      // Updating caretaker details in the database
-      CareTakerDatabaseService careTakerDatabaseService =
-          CareTakerDatabaseService();
-      careTakerDatabaseService.caretakerDetailsUpdate(
-        careTakerModel.careUid,
-        {"memberUid": careTakerModel.memberUid},
-      );
-
-      // Stopping loader and showing success message
-      // managementOnCareTaker.getAndNavigate();
+          // Stopping loader and showing success message
+          // managementOnCareTaker.getAndNavigate();
+          loader.stop();
+          Get.showSnackbar(const GetSnackBar(
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+            title: "Success",
+            message: "Successfully added",
+          ));
+        }
+      });
+    } catch (e) {
       loader.stop();
-      Get.showSnackbar(const GetSnackBar(
+      Get.showSnackbar(GetSnackBar(
         backgroundColor: Colors.green,
-        duration: Duration(seconds: 2),
-        title: "Success",
-        message: "Successfully added",
+        duration: const Duration(seconds: 2),
+        title: "Failed",
+        message: "$e",
       ));
-    });
+    }
   }
 
   /// Edits details of an existing member.
@@ -229,7 +251,7 @@ class FormSubmission {
 
     // Obtaining notification token
     String token = await notificationServices.getToken();
-    
+
     // Creating beneficiary model
     BenefiiciaryModel beneficiaryModel = BenefiiciaryModel(
       random: managementOnCareTaker.members[index].random,

@@ -1,4 +1,3 @@
-
 import 'package:care_connect/model/beneficiary_model.dart';
 import 'package:care_connect/model/medication_model.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +15,8 @@ class BeneficiaryLocalService {
 
   // Retrieve from GetStorage
   BenefiiciaryModel retrieveFromGetStorage() {
-    final a = box.read('beneficiary') ?? {};
+    final a = box.read('beneficiary');
+
     debugPrint("get_ben$a");
     // If medications is a list, cast it to List<Map<String, dynamic>>
     List medidetails = a["medications"];

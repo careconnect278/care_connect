@@ -83,6 +83,12 @@ class MemberDetailsScreen extends StatelessWidget {
                           label: "Password",
                           textEditingController:
                               textFieldController.caretakerPasswordController,
+                          validator: (value) {
+                            if (value!.length < 6) {
+                              return "password mustbe greater than 6 characters";
+                            }
+                            return null;
+                          },
                         ),
                         SizedBox(
                           height: 2.h,
@@ -112,7 +118,7 @@ class MemberDetailsScreen extends StatelessWidget {
                           label: "Phone Number",
                           validator: (value) {
                             if (value!.length < 10 || value.length > 10) {
-                              return "Phone number mustbe 10 numbers";
+                              return "Phone number must contain 10 digits";
                             }
                             return null;
                           },
@@ -153,6 +159,12 @@ class MemberDetailsScreen extends StatelessWidget {
                           label: "Password",
                           textEditingController:
                               textFieldController.beneficiaryPasswordController,
+                          validator: (value) {
+                            if (value!.length < 6) {
+                              return "password mustbe greater than 6 characters";
+                            }
+                            return null;
+                          },
                         ),
                       },
                       CustomTextField(
@@ -198,7 +210,7 @@ class MemberDetailsScreen extends StatelessWidget {
                         height: 2.h,
                       ),
                       CustomTextField(
-                        label: "noise Count",
+                        label: "Scream Threshold",
                         keyboardType: TextInputType.number,
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly
@@ -223,7 +235,7 @@ class MemberDetailsScreen extends StatelessWidget {
                         height: 2.h,
                       ),
                       CustomTextField(
-                        label: "Time to Alert",
+                        label: "Inactive Timeout Duration",
                         textEditingController:
                             textFieldController.alertTimeController,
                         readOnly: true,
@@ -620,7 +632,6 @@ class MemberDetailsScreen extends StatelessWidget {
                                       managementOnCareTaker);
                                 } else {
                                   if (index != null) {
-                                    
                                     await FormSubmission.edit(
                                         textFieldController,
                                         managementOnCareTaker,

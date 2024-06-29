@@ -57,12 +57,11 @@ class NotificationServices {
     FirebaseMessaging.onBackgroundMessage(handleMessages);
     FirebaseMessaging.onMessageOpenedApp.listen(handleMessages);
     FirebaseMessaging.onMessage.listen((message) {
-      Canalert canalert = Canalert();
-      canalert.updateAlert(false);
       final notification = message.notification;
       if (notification == null) {
         return;
       }
+      log(jsonEncode(message.toMap()));
       // Show local notification when message is received
       flutterLocalNotificationsPlugin.show(
           notification.hashCode,
@@ -187,6 +186,83 @@ class NotificationServices {
     }
   } // Send notification via FCM
 
+  Future sendNotificationFall(
+    String title,
+    String body,
+    String to,
+    Map<String, dynamic> data,
+    String para,
+    bool isCaretaker,
+  ) async {
+    log(para);
+
+    loaderController.aadsleepLogs("onSend notification Fuction");
+
+    try {
+      final token = await getToken();
+      final url = Uri.parse('https://sendnotification-regbxotyqa-uc.a.run.app');
+      loaderController
+          .aadsleepLogs("url:https://sendnotification-regbxotyqa-uc.a.run.app");
+      var jsonEncode2 = jsonEncode({
+        'notification': {'title': title, 'body': body},
+        'token': isCaretaker ? to : token,
+        'data': data, // Include payload here
+      });
+
+      loaderController.aadsleepLogs("token:$token");
+      loaderController.aadsleepLogs("token:${token == to}");
+      var headers = <String, String>{
+        'Content-Type': 'application/json',
+        'Authorization': 'key=$_serverKey',
+      };
+      loaderController.aadsleepLogs("body:$jsonEncode2");
+      log("body:$jsonEncode2");
+      loaderController.aadsleepLogs("headers:$headers");
+
+      if (isCaretaker) {
+        {
+          final response = await http.post(
+            url,
+            headers: headers,
+            body: jsonEncode2,
+          );
+
+          loaderController.aadsleepLogs(
+              "responseStatusCode of caretaker:${response.statusCode}");
+          loaderController
+              .aadsleepLogs("responseBody of caretaker:${response.body}");
+
+          if (response.statusCode == 200) {
+          } else {
+            debugPrint('Failed to send notification: ${response.body}');
+          }
+        }
+      } else {
+        final response = await http.post(
+          url,
+          headers: headers,
+          body: jsonEncode2,
+        );
+
+        loaderController.aadsleepLogs(
+            "responseStatusCode of beneficiary:${response.statusCode}");
+        loaderController
+            .aadsleepLogs("responseBody of beneficiary:${response.body}");
+        log("responseStatusCode of beneficiary:${response.statusCode}");
+        log("responseBody of beneficiary:${response.body}");
+        if (response.statusCode == 200) {
+          log("message${response.body}");
+        } else {
+          debugPrint('Failed to send notification: ${response.body}');
+        }
+      }
+    } catch (e) {
+      loaderController.aadsleepLogs("error on notification:${e.toString()}");
+
+      debugPrint('Error sending notification: $e');
+    }
+  }
+
   Future sendNotificationSleep(
     String title,
     String body,
@@ -221,20 +297,25 @@ class NotificationServices {
       loaderController.aadsleepLogs("headers:$headers");
 
       if (isCaretaker) {
-        final response = await http.post(
-          url,
-          headers: headers,
-          body: jsonEncode2,
-        );
+        Canalert canalert = Canalert();
+        bool alertCan = await canalert.retrieveFromSharedPreferences();
+        log("booollllll$alertCan");
+        if (alertCan == false) {
+          final response = await http.post(
+            url,
+            headers: headers,
+            body: jsonEncode2,
+          );
+          log('Failed to send notification: ${response.body}');
+          loaderController.aadsleepLogs(
+              "responseStatusCode of caretaker:${response.statusCode}");
+          loaderController
+              .aadsleepLogs("responseBody of caretaker:${response.body}");
 
-        loaderController.aadsleepLogs(
-            "responseStatusCode of caretaker:${response.statusCode}");
-        loaderController
-            .aadsleepLogs("responseBody of caretaker:${response.body}");
-
-        if (response.statusCode == 200) {
-        } else {
-          debugPrint('Failed to send notification: ${response.body}');
+          if (response.statusCode == 200) {
+          } else {
+            debugPrint('Failed to send notification: ${response.body}');
+          }
         }
       } else {
         final response = await http.post(
@@ -247,7 +328,8 @@ class NotificationServices {
             "responseStatusCode of beneficiary:${response.statusCode}");
         loaderController
             .aadsleepLogs("responseBody of beneficiary:${response.body}");
-
+        log("responseStatusCode of beneficiary:${response.statusCode}");
+        log("responseBody of beneficiary:${response.body}");
         if (response.statusCode == 200) {
           log("message${response.body}");
         } else {
@@ -266,8 +348,8 @@ class NotificationServices {
 Future handleMessages(RemoteMessage? remoteMessage) async {
   debugPrint(remoteMessage.toString());
   if (remoteMessage == null) return;
-  Canalert canalert = Canalert();
-  canalert.updateAlert(false);
+  log(remoteMessage.notification!.title!);
+
   Get.toNamed(AlertScreen.route, arguments: remoteMessage);
 }
 

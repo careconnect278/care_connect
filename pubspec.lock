@@ -393,6 +393,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
+  logging:
+    dependency: transitive
+    description:
+      name: logging
+      sha256: "623a88c9594aa774443aa3eb2d41807a48486b5613e67599fb4c41c0ad47c340"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
   matcher:
     dependency: transitive
     description:
@@ -553,16 +561,33 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
-  screen_state:
+  screen_detect_plugin:
     dependency: "direct main"
     description:
-      name: screen_state
-      sha256: "4d89d4b429e4f30de89add477c630384feb5b786dcf4380ef1e015841e169672"
+      path: "."
+      ref: HEAD
+      resolved-ref: "1023915b1fc4ced0e2b4211291996bc0d0dfdfd0"
+      url: "https://github.com/careconnect278/screen_detect_plugin.git"
+    source: git
+    version: "0.0.1"
+  sensors_plus:
+    dependency: "direct main"
+    description:
+      name: sensors_plus
+      sha256: "6898cd4490ffc27fea4de5976585e92fae55355175d46c6c3b3d719d42f9e230"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.1"
-  shared_preferences:
+    version: "5.0.1"
+  sensors_plus_platform_interface:
     dependency: transitive
+    description:
+      name: sensors_plus_platform_interface
+      sha256: bc472d6cfd622acb4f020e726433ee31788b038056691ba433fec80e448a094f
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
+  shared_preferences:
+    dependency: "direct main"
     description:
       name: shared_preferences
       sha256: d3bbe5553a986e83980916ded2f0b435ef2e1893dfaa29d5a7a790d0eca12180
@@ -807,5 +832,5 @@ packages:
     source: hosted
     version: "6.5.0"
 sdks:
-  dart: ">=3.3.3 <4.0.0"
+  dart: ">=3.4.0 <4.0.0"
   flutter: ">=3.19.0"
